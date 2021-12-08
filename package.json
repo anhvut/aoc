@@ -1,0 +1,25 @@
+{
+  "name": "aoc",
+  "version": "1.0.0",
+  "description": "My solutions of advent of code",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/anhvut/aoc.git"
+  },
+  "keywords": [
+    "kata",
+    "aoc",
+    "advent",
+    "code"
+  ],
+  "author": "Anh-Vu Tran",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/anhvut/aoc/issues"
+  },
+  "homepage": "https://github.com/anhvut/aoc#readme"
+}
