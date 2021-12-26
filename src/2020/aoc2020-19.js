@@ -23,37 +23,6 @@ const data = lines.reduce(({state, candidates, rules}, line) => {
     return {state, candidates, rules};
 }, {state: 0, candidates: [], rules: []});
 
-if (!Array.prototype.flat) {
-    Object.defineProperty(Array.prototype, 'flat', {
-        configurable: true,
-        value: function flat () {
-            var depth = isNaN(arguments[0]) ? 1 : Number(arguments[0]);
-
-            return depth ? Array.prototype.reduce.call(this, function (acc, cur) {
-                if (Array.isArray(cur)) {
-                    // acc.push.apply(acc, flat.call(cur, depth - 1));      // stack overflow !
-                    flat.call(cur, depth - 1).forEach(a => acc.push(a));
-                } else {
-                    acc.push(cur);
-                }
-
-                return acc;
-            }, []) : Array.prototype.slice.call(this);
-        },
-        writable: true
-    });
-}
-
-if (!Array.prototype.flatMap) {
-    Object.defineProperty(Array.prototype, 'flatMap', {
-        configurable: true,
-        value: function flatMap (callback) {
-            return Array.prototype.map.apply(this, arguments).flat();
-        },
-        writable: true
-    });
-}
-
 const cache = [];
 const mix = (arr, n, prefix, acc) => {
     if  (n === arr.length - 1) {

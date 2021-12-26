@@ -6,14 +6,14 @@ authors = ["Anh-Vu Tran <anhvutran1@gmail.com>"]
 
 [[bin]]
 name = "aoc2020-05"
-path = "src/adventOfCode2020/aoc2020-05.rs"
+path = "src/2020/aoc2020-05.rs"
 
 [[bin]]
 name = "aoc2021-01"
-path = "src/adventOfCode2021/aoc2021-01.rs"
+path = "src/2021/aoc2021-01.rs"
 
 [[bin]]
 name = "aoc2021-02"
-path = "src/adventOfCode2021/aoc2021-02.rs"
+path = "src/2021/aoc2021-02.rs"
 
 [dependencies]

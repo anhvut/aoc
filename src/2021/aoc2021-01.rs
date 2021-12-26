@@ -6,7 +6,7 @@ fn compute(nbs: &Vec<i32>) -> i32 {
 }
 
 fn main() {
-    let lines = helper::read_lines("./src/adventOfCode2021/aoc2021-01.txt").unwrap();
+    let lines = helper::read_lines("./src/2021/aoc2021-01.txt").unwrap();
     let nbs = lines
         .flat_map(|c| c.map(|n| n.parse::<i32>()))
         .flatten()

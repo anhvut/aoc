@@ -44,7 +44,7 @@ fn reducer2((mut h, mut d, mut a): (i32, i32, i32), (cmd, nb): &(Direction, i32)
 }
 
 fn main() {
-    let lines = helper::read_lines("./src/adventOfCode2021/aoc2021-02.txt").unwrap();
+    let lines = helper::read_lines("./src/2021/aoc2021-02.txt").unwrap();
     let commands: Vec<(Direction, i32)> = lines
         .flat_map(|c| c.map(|n| {
             let tokens = n.split(" ").collect::<Vec<&str>>();

@@ -3,7 +3,7 @@ use std::io::{self, BufRead};
 use std::path::Path;
 
 fn main() -> Result<(), std::io::Error> {
-    let lines = read_lines("./src/adventOfCode2020/aoc2020-05.txt")?;
+    let lines = read_lines("./src/2020/aoc2020-05.txt")?;
     let mut values = lines
         .flatten()
         .map(|a| a.chars().map(|c| match c {
