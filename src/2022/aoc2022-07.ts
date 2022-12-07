@@ -8,7 +8,7 @@ type FileEntry = {
 const parse = (input: string[]): [Record<string, FileEntry[]>, Record<string, number>] => {
   let cwd = '/';
   let currentFiles: FileEntry[] = [];
-  let folder2Children: Record<string, FileEntry[]> = {};
+  const folder2Children: Record<string, FileEntry[]> = {};
 
   for (const line of input) {
     if (line === '$ cd /') {
@@ -70,13 +70,13 @@ const part1 = (input: string[]) => {
 };
 
 const part2 = (input: string[]) => {
-  const totalDisk = 70000000;
-  const targetFree = 30000000;
+  const totalDisk = 70_000_000;
+  const targetFree = 30_000_000;
   const [_folder2Children, folder2Size] = parse(input);
   const need2Free = targetFree - (totalDisk - folder2Size['/']);
   return Object.values(folder2Size)
-    .sort((a, b) => a - b)
-    .find((x) => x >= need2Free);
+    .filter((x) => x >= need2Free)
+    .reduce((a, b) => Math.min(a, b));
 };
 
 const inputSample = `$ cd /
