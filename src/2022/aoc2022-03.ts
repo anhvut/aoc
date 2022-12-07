@@ -6,31 +6,44 @@ const charToPoints = (x: string): number => {
 
 const sum = (x: number, y: number): number => x + y;
 
-const part1 = (input: string[]) => input.map(x => {
-  const l = x.length, h = l / 2, p = [{}, {}];
-  for (let i = 0; i < l; i++) {
-    p[Math.floor(i / h)][x[i]] = true;
-  }
-  return Object.keys(p[0]).find(x => p[1][x]);
-}).map(charToPoints).reduce(sum, 0);
+const part1 = (input: string[]) =>
+  input
+    .map((x) => {
+      const l = x.length,
+        h = l / 2,
+        p = [{}, {}];
+      for (let i = 0; i < l; i++) {
+        p[Math.floor(i / h)][x[i]] = true;
+      }
+      return Object.keys(p[0]).find((x) => p[1][x]);
+    })
+    .map(charToPoints)
+    .reduce(sum, 0);
 
-const part2 = (input: string[]) => input.reduce<string[][]>((agg, x) => {
-  const last = agg[agg.length -1];
-  if (last.length >= 3) agg.push([x]);
-  else last.push(x);
-  return agg;
-}, [[]]).map(lines => {
-  return lines.map((line) => {
-    const r = {};
-    Array.from(line).forEach(c => r[c] = true);
-    return r;
-  });
-}).map(arraySets => {
-  const first = Object.keys(arraySets.pop());
-  return arraySets.reduce<string[]>((agg, set) => {
-    return agg.filter(x => set[x]);
-  }, first)[0];
-}).map(charToPoints).reduce(sum, 0);
+const part2 = (input: string[]) =>
+  input
+    .reduce<string[][]>(
+      (agg, x) => {
+        const last = agg[agg.length - 1];
+        if (last.length >= 3) agg.push([x]);
+        else last.push(x);
+        return agg;
+      },
+      [[]]
+    )
+    .map((lines) =>
+      lines.map((line) => {
+        const r = {};
+        Array.from(line).forEach((c) => (r[c] = true));
+        return r;
+      })
+    )
+    .map((arraySets) => {
+      const first = Object.keys(arraySets.pop());
+      return arraySets.reduce<string[]>((agg, set) => agg.filter((x) => set[x]), first)[0];
+    })
+    .map(charToPoints)
+    .reduce(sum, 0);
 
 const inputSample = `vJrwpWtwJgWrhcsFMMfFFhFp
 jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL

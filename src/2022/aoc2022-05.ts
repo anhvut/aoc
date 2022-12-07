@@ -10,20 +10,20 @@ const parse = (input: string[]) => {
   const instructions: number[][] = [];
 
   for (const line of input) {
-    const indices = allIndices(line, "[");
+    const indices = allIndices(line, '[');
     if (indices.length > 0) {
       for (const n of indices) {
         const i = n / 4 + 1;
         if (!stacks[i]) stacks[i] = [];
         stacks[i].push(line[n + 1]);
       }
-    } else if (line.startsWith("move")) {
+    } else if (line.startsWith('move')) {
       instructions.push(
         line
-          .replace("move ", "")
-          .replace(" from ", " ")
-          .replace(" to ", " ")
-          .split(" ")
+          .replace('move ', '')
+          .replace(' from ', ' ')
+          .replace(' to ', ' ')
+          .split(' ')
           .map((x) => +x)
       );
     }
@@ -43,7 +43,7 @@ const part1 = (input: string[]) => {
   return stacks
     .slice(1)
     .map((x) => x[0])
-    .join("");
+    .join('');
 };
 
 const part2 = (input: string[]) => {
@@ -56,7 +56,7 @@ const part2 = (input: string[]) => {
   return stacks
     .slice(1)
     .map((x) => x[0])
-    .join("");
+    .join('');
 };
 
 const inputSample = `    [D]    
@@ -67,7 +67,7 @@ const inputSample = `    [D]
 move 1 from 2 to 1
 move 3 from 1 to 3
 move 2 from 2 to 1
-move 1 from 1 to 2`.split("\n");
+move 1 from 1 to 2`.split('\n');
 
 const inputReal = `[T]     [D]         [L]            
 [R]     [S] [G]     [P]         [H]
@@ -580,7 +580,7 @@ move 11 from 2 to 6
 move 2 from 1 to 7
 move 7 from 9 to 8
 move 6 from 9 to 3
-move 1 from 6 to 5`.split("\n");
+move 1 from 6 to 5`.split('\n');
 
 console.log(part1(inputReal));
 console.log(part2(inputReal));

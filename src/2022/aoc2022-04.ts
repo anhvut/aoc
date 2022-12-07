@@ -1,8 +1,8 @@
 const part1 = (input: string[]) =>
   input
     .map((x) => {
-      return x.split(",").map((y) => {
-        return y.split("-").map((z) => +z);
+      return x.split(',').map((y) => {
+        return y.split('-').map((z) => +z);
       });
     })
     .filter(([[x1, x2], [y1, y2]]) => {
@@ -12,17 +12,12 @@ const part1 = (input: string[]) =>
 const part2 = (input: string[]) =>
   input
     .map((x) => {
-      return x.split(",").map((y) => {
-        return y.split("-").map((z) => +z);
+      return x.split(',').map((y) => {
+        return y.split('-').map((z) => +z);
       });
     })
     .filter(([[x1, x2], [y1, y2]]) => {
-      return (
-        (x1 <= y1 && x2 >= y1) ||
-        (x1 <= y2 && x2 >= y2) ||
-        (y1 <= x1 && y2 >= x1) ||
-        (y1 <= x2 && y2 >= x2)
-      );
+      return (x1 <= y1 && x2 >= y1) || (x1 <= y2 && x2 >= y2) || (y1 <= x1 && y2 >= x1) || (y1 <= x2 && y2 >= x2);
     }).length;
 
 const inputSample = `2-4,6-8
@@ -30,7 +25,7 @@ const inputSample = `2-4,6-8
 5-7,7-9
 2-8,3-7
 6-6,4-6
-2-6,4-8`.split("\n");
+2-6,4-8`.split('\n');
 
 const inputReal = `17-99,18-24
 14-91,22-91
@@ -1031,7 +1026,7 @@ const inputReal = `17-99,18-24
 17-70,18-62
 1-94,1-99
 1-78,1-1
-3-97,2-2`.split("\n");
+3-97,2-2`.split('\n');
 
 console.log(part1(inputReal));
 console.log(part2(inputReal));
