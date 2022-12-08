@@ -1,8 +1,9 @@
 export {};
 
-const part = (s: string, min: number = 14) => {
+const part = (s: string, min = 14) => {
   for (let i = min; i++; i <= s.length)
     if (Array.from(s.slice(i - min, i)).every((c, j, a) => a.indexOf(c) == j && a.lastIndexOf(c) == j)) return i;
+  return 0;
 };
 
 const part1 = (s: string) => part(s, 4);

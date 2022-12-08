@@ -1,11 +1,11 @@
 export {};
-const fs = require('fs');
-const lines: string[] = fs.readFileSync(__filename.replace(/\.js$/, '.txt'), 'utf-8').split(/\n/g);
+import fs from 'fs';
+const lines: string[] = fs.readFileSync(__filename.replace(/\.[jt]s$/, '.txt'), 'utf-8').split(/\n/g);
 const inputDigits: number[] = lines[0].split('').map(Number);
 
-const compute = (nbPhases: number = 100, input: number[] = inputDigits): number[] => {
+const compute = (nbPhases = 100, input: number[] = inputDigits): number[] => {
   const length = input.length;
-  let digits = Array(length * 2).fill(0);   // work with length * 2 to avoid boundary checks
+  let digits = Array(length * 2).fill(0); // work with length * 2 to avoid boundary checks
   for (let i = 0; i < length; i++) digits[i] = input[i];
   let nextDigits = Array(digits.length).fill(0);
   const start = new Date();
@@ -23,7 +23,7 @@ const compute = (nbPhases: number = 100, input: number[] = inputDigits): number[
       } while (i < length);
       nextDigits[repetition - 1] = Math.abs(acc) % 10;
     }
-    let swap = digits;
+    const swap = digits;
     digits = nextDigits;
     nextDigits = swap;
   }
@@ -31,7 +31,7 @@ const compute = (nbPhases: number = 100, input: number[] = inputDigits): number[
   return digits.slice(0, length);
 };
 
-const compute2ndHalf = (nbPhases: number = 100, input: number[] = inputDigits): number[] => {
+const compute2ndHalf = (nbPhases = 100, input: number[] = inputDigits): number[] => {
   let digits = input.slice();
   let nextDigits = new Array(digits.length);
   const start = new Date();
@@ -39,11 +39,11 @@ const compute2ndHalf = (nbPhases: number = 100, input: number[] = inputDigits): 
   for (let phase = 0; phase < nbPhases; phase++) {
     // from end to beginning : only add first digit
     let acc = 0;
-    for (let k = input.length-1; k >= 0; k--) {
+    for (let k = input.length - 1; k >= 0; k--) {
       acc += digits[k];
       nextDigits[k] = Math.abs(acc) % 10;
     }
-    let swap = digits;
+    const swap = digits;
     digits = nextDigits;
     nextDigits = swap;
   }
@@ -58,10 +58,12 @@ const part1 = (): number => {
 
 const part2 = (): number => {
   const offset = +inputDigits.slice(0, 7).join('');
-  const offsetFromEnd = inputDigits.length*10_000 - offset;
+  const offsetFromEnd = inputDigits.length * 10_000 - offset;
   const repetitionNeeded = Math.ceil(offsetFromEnd / inputDigits.length);
-  const offsetReduced = inputDigits.length * repetitionNeeded - offsetFromEnd
-  const digits = Array(repetitionNeeded).fill(0).flatMap(_ => inputDigits);
+  const offsetReduced = inputDigits.length * repetitionNeeded - offsetFromEnd;
+  const digits = Array(repetitionNeeded)
+    .fill(0)
+    .flatMap((_) => inputDigits);
   const output = compute2ndHalf(100, digits);
   return +output.slice(offsetReduced, offsetReduced + 8).join('');
 };

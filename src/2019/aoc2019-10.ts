@@ -1,6 +1,9 @@
 export {};
-const fs = require('fs');
-const map: string[][] = fs.readFileSync(__filename.replace(/\.js$/, '.txt'), 'utf-8').split(/\n/g).map(x => Array.from(x));
+import fs from 'fs';
+const map: string[][] = fs
+  .readFileSync(__filename.replace(/\.[jt]$/, '.txt'), 'utf-8')
+  .split(/\n/g)
+  .map((x) => Array.from(x));
 
 type Point = [number, number];
 
@@ -18,7 +21,7 @@ const computeGcd = (a: number, b: number): number => {
   const r = a % b;
   if (!r) return b;
   return computeGcd(b, r);
-}
+};
 
 const getIncrement = (x: number, y: number): Point => {
   if (x === 0) return [0, y / Math.abs(y)];
@@ -30,7 +33,7 @@ const getIncrement = (x: number, y: number): Point => {
 };
 
 function getOtherPointsByIncrement(i: number): Record<string, Point[]> {
-  const incrementKeys: Record<string, any> = {};
+  const incrementKeys: Record<string, Point[]> = {};
   const [x, y] = stars[i];
   for (let j = 0; j < stars.length; j++) {
     if (i === j) continue;
@@ -70,7 +73,7 @@ const part2 = (): number => {
     const [x2, y2] = deserializePoint(b);
     if (x1 >= 0 && x2 < 0) return -1;
     if (x1 < 0 && x2 >= 0) return 1;
-    return y1/x1 - y2/x2;
+    return y1 / x1 - y2 / x2;
   });
   let maxDepth = 0;
   for (const points of Object.values(increments)) {
@@ -79,10 +82,12 @@ const part2 = (): number => {
   }
   const vaporizedPoints = [];
   for (let depth = 0; depth < maxDepth; depth++) {
-    vaporizedPoints.push(...sortedIncrementKeys.flatMap(key => {
-      const point = increments[key][depth];
-      return point ? [point] : [];
-    }));
+    vaporizedPoints.push(
+      ...sortedIncrementKeys.flatMap((key) => {
+        const point = increments[key][depth];
+        return point ? [point] : [];
+      })
+    );
   }
   return vaporizedPoints[199][0] * 100 + vaporizedPoints[199][1];
 };

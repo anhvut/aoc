@@ -1,18 +1,22 @@
 export {};
-const fs = require('fs');
-const nbs: number[] = fs.readFileSync(__filename.replace(/\.js/, '.txt'), 'utf-8').split(',').map(x => +x);
+import fs from 'fs';
+const nbs: number[] = fs
+  .readFileSync(__filename.replace(/\.[jt]s/, '.txt'), 'utf-8')
+  .split(',')
+  .map((x) => +x);
 
-function *run(input: number[], program: number[]): Generator<number, number, number> {
-  let pos: number = 0;
-  let result: number = 0;
-  let relativeBase: number = 0;
+function* run(input: number[], program: number[]): Generator<number, number, number> {
+  let pos = 0;
+  let result = 0;
+  let relativeBase = 0;
   const mem: number[] = program.slice();
-  const getValue = (mode: number, param: number) => (mode === 1 ? param : mode === 2 ? mem[relativeBase + param] : mem[param]) ?? 0;
+  const getValue = (mode: number, param: number) =>
+    (mode === 1 ? param : mode === 2 ? mem[relativeBase + param] : mem[param]) ?? 0;
   const getDestinationAddress = (mode: number, param: number) => {
     if (mode === 0) return param;
     if (mode === 2) return relativeBase + param;
     throw new Error(`Invalid destination mode ${mode}`);
-  }
+  };
   while (pos < mem.length) {
     const instruction = mem[pos];
     const opcode = instruction % 100;
@@ -76,6 +80,7 @@ function *run(input: number[], program: number[]): Generator<number, number, num
         throw Error(`Unknown opcode ${opcode} at position ${pos}`);
     }
   }
+  return 0;
 }
 
 const part1 = (): number[] => [...run([1], nbs)];

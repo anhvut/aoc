@@ -1,10 +1,13 @@
 export {};
-const fs = require('fs');
-const nbs: number[] = fs.readFileSync(__filename.replace(/\.js/, '.txt'), 'utf-8').split(',').map(x => +x);
+import fs from 'fs';
+const nbs: number[] = fs
+  .readFileSync(__filename.replace(/\.[jt]s/, '.txt'), 'utf-8')
+  .split(',')
+  .map((x) => +x);
 
-function *run(input: number[], program: number[]): Generator<number, number, number> {
-  let pos: number = 0;
-  let result: number = 0;
+function* run(input: number[], program: number[]): Generator<number, number, number> {
+  let pos = 0;
+  let result = 0;
   const mem: number[] = program.slice();
   while (pos < mem.length) {
     const instruction = mem[pos];
@@ -23,7 +26,7 @@ function *run(input: number[], program: number[]): Generator<number, number, num
       }
       case 3: {
         const dst = mem[pos + 1];
-        mem[dst] = input.shift();
+        mem[dst] = input.shift() as number;
         pos += 2;
         break;
       }
@@ -59,9 +62,10 @@ function *run(input: number[], program: number[]): Generator<number, number, num
         throw Error(`Unknown opcode ${opcode} at position ${pos}`);
     }
   }
+  return 0;
 }
 
-function *generatePermutation<T>(possibility: T[]): Generator<T[], void> {
+function* generatePermutation<T>(possibility: T[]): Generator<T[], void> {
   if (possibility.length <= 1) yield possibility;
   else {
     for (let i = 0; i < possibility.length; i++) {
@@ -91,7 +95,9 @@ const part2 = (): number => {
       programs.push(program);
       lastOutput = program.next().value;
     }
-    let i = 0, maxInPermutation = 0, next: IteratorResult<number, number>;
+    let i = 0,
+      maxInPermutation = 0,
+      next: IteratorResult<number, number>;
     do {
       next = programs[i].next(lastOutput);
       lastOutput = next.value;

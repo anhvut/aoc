@@ -1,5 +1,5 @@
 export {};
-const fs = require('fs');
+import fs from 'fs';
 const nbs: number[] = fs
   .readFileSync(__dirname + '/aoc2022-01.txt', 'utf-8')
   .split(/\n/g)

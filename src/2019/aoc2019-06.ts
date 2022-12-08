@@ -1,13 +1,13 @@
 export {};
-const fs = require('fs');
-const lines: string[] = fs.readFileSync(__filename.replace(/\.js/, '.txt'), 'utf-8').split(/\n/g);
+import fs from 'fs';
+const lines: string[] = fs.readFileSync(__filename.replace(/\.[jt]s/, '.txt'), 'utf-8').split(/\n/g);
 
-const relations: string[][] = lines.map(x => x.split(')'));
+const relations: string[][] = lines.map((x) => x.split(')'));
 
 type Tree<T> = {
   value: T;
   children: Tree<T>[];
-  parent: Tree<T>;
+  parent: Tree<T> | null;
 };
 
 const [root, registry]: [Tree<string>, Record<string, Tree<string>>] = (() => {
@@ -17,12 +17,12 @@ const [root, registry]: [Tree<string>, Record<string, Tree<string>>] = (() => {
     const [parent, child] = relations[i];
     let childNode = registry[child];
     if (!childNode) {
-      childNode = {value: child, children: [], parent: null};
+      childNode = { value: child, children: [], parent: null };
       registry[child] = childNode;
     } else delete potentialRoot[child];
     let parentNode = registry[parent];
     if (!parentNode) {
-      parentNode = {value: parent, children: [], parent: null};
+      parentNode = { value: parent, children: [], parent: null };
       registry[parent] = parentNode;
       potentialRoot[parent] = true;
     }
@@ -31,24 +31,30 @@ const [root, registry]: [Tree<string>, Record<string, Tree<string>>] = (() => {
   }
   const roots = Object.keys(potentialRoot);
   if (roots.length !== 1) throw new Error(`No unique root found ${roots}`);
-  return [registry[roots[0]], registry] as any;
+  return [registry[roots[0]], registry];
 })();
 
 const part1 = (): number => {
-  const count = (tree: Tree<string>, level: number = 1): number =>
+  const count = (tree: Tree<string>, level = 1): number =>
     tree.children.reduce((a, n) => a + count(n, level + 1), 0) + tree.children.length * level;
   return count(root);
 };
 
 const part2 = (): number => {
-  const from = registry['YOU'].parent;
-  const to = registry['SAN'].parent;
-  const getParents = (node: Tree<string>): Tree<string>[] => node.parent ? getParents(node.parent).concat(node.parent) : [];
+  const from = registry['YOU'].parent as Tree<string>;
+  const to = registry['SAN'].parent as Tree<string>;
+  const getParents = (node: Tree<string>): Tree<string>[] =>
+    node.parent ? getParents(node.parent).concat(node.parent) : [];
   const parentsFrom = getParents(from);
   const parentsTo = getParents(to);
-  const distanceFrom: Record<string, number> = Object.fromEntries(parentsFrom.map((n, i, a) => [n.value, a.length - i]))
-  const distanceTo: Record<string, number> = Object.fromEntries(parentsTo.map((n, i, a) => [n.value, a.length - i]))
-  const common = parentsFrom.slice().reverse().find(n => distanceTo[n.value]).value;
+  const distanceFrom: Record<string, number> = Object.fromEntries(
+    parentsFrom.map((n, i, a) => [n.value, a.length - i])
+  );
+  const distanceTo: Record<string, number> = Object.fromEntries(parentsTo.map((n, i, a) => [n.value, a.length - i]));
+  const common = parentsFrom
+    .slice()
+    .reverse()
+    .find((n) => distanceTo[n.value])?.value as string;
   return distanceFrom[common] + distanceTo[common];
 };
 

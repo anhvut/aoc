@@ -1,5 +1,5 @@
 export {};
-const fs = require('fs');
+import fs from 'fs';
 
 enum I1 {
   A = 'A',
@@ -18,7 +18,7 @@ const dict1: Record<I1, string> = {
   B: 'Paper',
   C: 'Scissors',
 };
-const dict2 = {
+const dict2: Record<I2, string> = {
   X: 'Rock',
   Y: 'Paper',
   Z: 'Scissors',
@@ -27,18 +27,15 @@ const dict2 = {
 const input: Array<[I1, I2]> = fs
   .readFileSync(__dirname + '/aoc2022-02.txt', 'utf-8')
   .split(/\n/g)
-  .map(
-    (line, i) => {
-      if (!line) return null;
-      const r = line.split(' ');
-      if (!dict1[r[0]] || !dict2[r[1]]) {
-        throw Error(`Error line ${i + 1}: ${line}`);
-      }
-      return r;
-    },
-    [0]
-  )
-  .filter(Boolean);
+  .map((line, i) => {
+    if (!line) return null;
+    const r = line.split(' ') as [I1, I2];
+    if (!dict1[r[0]] || !dict2[r[1]]) {
+      throw Error(`Error line ${i + 1}: ${line}`);
+    }
+    return r;
+  })
+  .filter(Boolean) as unknown as Array<[I1, I2]>;
 
 const points: Record<I2, number> = {
   X: 1,

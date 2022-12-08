@@ -1,13 +1,13 @@
-const allIndices = (arr, val) => {
+const allIndices = (arr: string, val: string) => {
   const r = [];
   let i = -1;
   while ((i = arr.indexOf(val, i + 1)) != -1) r.push(i);
   return r;
 };
 
-const parse = (input: string[]) => {
+const parse = (input: string[]): [string[][], Array<[number, number, number]>] => {
   const stacks: string[][] = [];
-  const instructions: number[][] = [];
+  const instructions: Array<[number, number, number]> = [];
 
   for (const line of input) {
     const indices = allIndices(line, '[');
@@ -24,7 +24,7 @@ const parse = (input: string[]) => {
           .replace(' from ', ' ')
           .replace(' to ', ' ')
           .split(' ')
-          .map((x) => +x)
+          .map((x) => +x) as [number, number, number]
       );
     }
   }
@@ -584,3 +584,4 @@ move 1 from 6 to 5`.split('\n');
 
 console.log(part1(inputReal));
 console.log(part2(inputReal));
+export {};

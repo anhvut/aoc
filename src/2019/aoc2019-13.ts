@@ -1,18 +1,22 @@
 export {};
-const fs = require('fs');
-const nbs: number[] = fs.readFileSync(__filename.replace(/\.js/, '.txt'), 'utf-8').split(',').map(x => +x);
+import fs from 'fs';
+const nbs: number[] = fs
+  .readFileSync(__filename.replace(/\.[jt]s/, '.txt'), 'utf-8')
+  .split(',')
+  .map((x) => +x);
 
-function *run(input: number[], program: number[]): Generator<number, number, number[]> {
-  let pos: number = 0;
-  let result: number = 0;
-  let relativeBase: number = 0;
+function* run(input: number[], program: number[]): Generator<number, number, number[]> {
+  let pos = 0;
+  let result = 0;
+  let relativeBase = 0;
   const mem: number[] = program.slice();
-  const getValue = (mode: number, param: number) => (mode === 1 ? param : mode === 2 ? mem[relativeBase + param] : mem[param]) ?? 0;
+  const getValue = (mode: number, param: number) =>
+    (mode === 1 ? param : mode === 2 ? mem[relativeBase + param] : mem[param]) ?? 0;
   const getDestinationAddress = (mode: number, param: number) => {
     if (mode === 0) return param;
     if (mode === 2) return relativeBase + param;
     throw new Error(`Invalid destination mode ${mode}`);
-  }
+  };
   while (pos < mem.length) {
     const instruction = mem[pos];
     const opcode = instruction % 100;
@@ -76,6 +80,7 @@ function *run(input: number[], program: number[]): Generator<number, number, num
         throw Error(`Unknown opcode ${opcode} at position ${pos}`);
     }
   }
+  return 0;
 }
 
 type Vector = number[];
@@ -85,13 +90,15 @@ const serializePoint = ([x, y]: Vector): string => `${x}_${y}`;
 const deserializePoint = (s: string): Vector => s.split('_').map(Number);
 
 function displayGrid(topLeft: number[], bottomRight: number[], map: Record<string, number>) {
-  const grid: Matrix = Array(bottomRight[1] - topLeft[1] + 1).fill(0).map(() => Array(bottomRight[0] - topLeft[0] + 1).fill(0));
+  const grid: Matrix = Array(bottomRight[1] - topLeft[1] + 1)
+    .fill(0)
+    .map(() => Array(bottomRight[0] - topLeft[0] + 1).fill(0));
   for (const [key, value] of Object.entries(map)) {
     const [x, y] = deserializePoint(key);
     grid[y - topLeft[1]][x - topLeft[0]] = value;
   }
-  const display: string[] = grid.map(line => line.map(x => [' ', '#', '.', '-', '*'][x] ?? '?').join(''));
-  display.forEach(line => console.log(line));
+  const display: string[] = grid.map((line) => line.map((x) => [' ', '#', '.', '-', '*'][x] ?? '?').join(''));
+  display.forEach((line) => console.log(line));
 }
 
 const part1 = (): number => {
@@ -116,7 +123,7 @@ const part1 = (): number => {
     bottomRight = [Math.max(bottomRight[0], x), Math.max(bottomRight[1], y)];
   } while (!done);
   displayGrid(topLeft, bottomRight, map);
-  return Object.values(map).filter(x => x === 2).length;
+  return Object.values(map).filter((x) => x === 2).length;
 };
 
 const part2 = (): number => {
@@ -148,5 +155,5 @@ const part2 = (): number => {
   return score;
 };
 
-console.log(part1())
-console.log(part2())
+console.log(part1());
+console.log(part2());

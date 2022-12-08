@@ -1030,3 +1030,4 @@ const inputReal = `17-99,18-24
 
 console.log(part1(inputReal));
 console.log(part2(inputReal));
+export {};

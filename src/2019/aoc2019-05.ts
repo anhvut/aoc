@@ -1,10 +1,13 @@
 export {};
-const fs = require('fs');
-const nbs: number[] = fs.readFileSync(__filename.replace(/\.js/, '.txt'), 'utf-8').split(',').map(x => +x);
+import fs from 'fs';
+const nbs: number[] = fs
+  .readFileSync(__filename.replace(/\.[jt]s/, '.txt'), 'utf-8')
+  .split(',')
+  .map((x) => +x);
 
 const run = (input: number): number => {
-  let pos: number = 0;
-  let result: number;
+  let pos = 0;
+  let result = 0;
   const mem: number[] = nbs.slice();
   while (pos < mem.length) {
     const instruction = mem[pos];

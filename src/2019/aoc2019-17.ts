@@ -1,18 +1,22 @@
 export {};
-const fs = require('fs');
-const nbs: number[] = fs.readFileSync(__filename.replace(/\.js/, '.txt'), 'utf-8').split(',').map(x => +x);
+import fs from 'fs';
+const nbs: number[] = fs
+  .readFileSync(__filename.replace(/\.[jt]s/, '.txt'), 'utf-8')
+  .split(',')
+  .map((x) => +x);
 
 function* run(input: number[], program: number[]): Generator<number, number, number[]> {
-  let pos: number = 0;
-  let result: number = 0;
-  let relativeBase: number = 0;
+  let pos = 0;
+  let result = 0;
+  let relativeBase = 0;
   const mem: number[] = program.slice();
-  const getValue = (mode: number, param: number) => (mode === 1 ? param : mode === 2 ? mem[relativeBase + param] : mem[param]) ?? 0;
+  const getValue = (mode: number, param: number) =>
+    (mode === 1 ? param : mode === 2 ? mem[relativeBase + param] : mem[param]) ?? 0;
   const getDestinationAddress = (mode: number, param: number) => {
     if (mode === 0) return param;
     if (mode === 2) return relativeBase + param;
     throw new Error(`Invalid destination mode ${mode}`);
-  }
+  };
   while (pos < mem.length) {
     const instruction = mem[pos];
     const opcode = instruction % 100;
@@ -76,6 +80,7 @@ function* run(input: number[], program: number[]): Generator<number, number, num
         throw Error(`Unknown opcode ${opcode} at position ${pos}`);
     }
   }
+  return 0;
 }
 
 function getMap() {
@@ -92,11 +97,17 @@ function getMap() {
 
 const part1 = (): number => {
   const map = getMap();
-  map.forEach(line => console.log(line.join('')));
+  map.forEach((line) => console.log(line.join('')));
   let result = 0;
   for (let y = 0; y < map.length; y++)
     for (let x = 0; x < map[y].length; x++)
-      if (map[y][x] === '#' && map[y][x-1] === '#' && map[y][x+1] === '#' && map[y+1]?.[x] === '#' && map[y-1]?.[x] === '#')
+      if (
+        map[y][x] === '#' &&
+        map[y][x - 1] === '#' &&
+        map[y][x + 1] === '#' &&
+        map[y + 1]?.[x] === '#' &&
+        map[y - 1]?.[x] === '#'
+      )
         result += x * y;
   return result;
 };
@@ -105,14 +116,20 @@ enum Direction {
   Up,
   Right,
   Down,
-  Left
+  Left,
 }
 
 type Vector = number[];
 type Matrix<T = number> = T[][];
 
 const oppositeDirection = (dir: Direction): Direction => (dir + 2) % 4;
-const getDirectionVector = (dir: Direction): Vector => [[0, -1], [1, 0], [0, 1], [-1, 0]][dir];
+const getDirectionVector = (dir: Direction): Vector =>
+  [
+    [0, -1],
+    [1, 0],
+    [0, 1],
+    [-1, 0],
+  ][dir];
 const vectorAdd = (pt1: Vector, pt2: Vector) => pt1.map((x, i) => x + pt2[i]);
 
 function findPosition<T>(map: Matrix<T>, search: T): Vector {
@@ -121,6 +138,7 @@ function findPosition<T>(map: Matrix<T>, search: T): Vector {
       if (map[y][x] === search) return [x, y];
     }
   }
+  return [];
 }
 
 function findNextDirection(map: Matrix<string>, position: Vector, forbiddenDirection: Direction): Direction {
@@ -150,10 +168,14 @@ function advanceDirection(map: Matrix<string>, position: Vector, direction: Dire
   }
 }
 
-function *findAllRoutines(input: string): Generator<[string, Record<string, string>]> {
+function* findAllRoutines(input: string): Generator<[string, Record<string, string>]> {
   // NB: J is 9th alphabet character = last possible function name
-  const instructions = input + ',';   // simplification
-  function *findRoutines(instructions: string, inputFunctions: Record<string, string>, nextFunctionName: string): Generator<[string, Record<string, string>]> {
+  const instructions = input + ','; // simplification
+  function* findRoutines(
+    instructions: string,
+    inputFunctions: Record<string, string>,
+    nextFunctionName: string
+  ): Generator<[string, Record<string, string>]> {
     if (instructions.match(/^[A-J,]+$/)) {
       if (instructions.length <= 21) yield [instructions.replace(/,$/, ''), inputFunctions];
       return;
@@ -165,27 +187,27 @@ function *findAllRoutines(input: string): Generator<[string, Record<string, stri
     for (let length = 20; length > 0; length--) {
       if (instructions[position + length] === ',' && instructions[position + length - 1].match(/\d/)) {
         const search = instructions.slice(position, position + length + 1);
-        if (search.match(/[A-J]/)) continue;  // subroutine included, skip
-        const functions = {...inputFunctions, [nextFunctionName]: search.slice(0, -1)};
+        if (search.match(/[A-J]/)) continue; // subroutine included, skip
+        const functions = { ...inputFunctions, [nextFunctionName]: search.slice(0, -1) };
         const newInstructions = instructions.replaceAll(search, `${nextFunctionName},`);
-        yield *findRoutines(newInstructions, functions, nextNextFunctionName);
+        yield* findRoutines(newInstructions, functions, nextNextFunctionName);
       }
     }
   }
-  yield *findRoutines(instructions, {}, 'A');
+  yield* findRoutines(instructions, {}, 'A');
 }
 
-function findInstructions(map: string[][]): Array<string|number> {
+function findInstructions(map: string[][]): Array<string | number> {
   let direction = Direction.Up;
   let position = findPosition(map, '^');
   let forbiddenDirection = null;
   let nextDirection;
-  const instructions: Array<string|number> = [];
+  const instructions: Array<string | number> = [];
   while ((nextDirection = findNextDirection(map, position, forbiddenDirection)) != null) {
     instructions.push(...findNextDirectionInstructions(direction, nextDirection));
     direction = nextDirection;
     forbiddenDirection = oppositeDirection(direction);
-    let [count, nextPosition] = advanceDirection(map, position, direction);
+    const [count, nextPosition] = advanceDirection(map, position, direction);
     instructions.push(count);
     position = nextPosition;
   }
@@ -198,8 +220,15 @@ const part2 = (): number => {
   const allRoutines = [...findAllRoutines(instructions.join(','))];
   const [main, routines] = allRoutines.find(([, r]) => Object.values(r).length <= 3);
   console.log(main, routines);
-  const inputString = main + '\n' + Object.keys(routines).sort().map(k => routines[k] + '\n').join('') + 'y\n';
-  const input = Array.from(inputString).map(x => x.charCodeAt(0));
+  const inputString =
+    main +
+    '\n' +
+    Object.keys(routines)
+      .sort()
+      .map((k) => routines[k] + '\n')
+      .join('') +
+    'y\n';
+  const input = Array.from(inputString).map((x) => x.charCodeAt(0));
   let lastOutput;
   const nbs2 = nbs.slice();
   nbs2[0] = 2;

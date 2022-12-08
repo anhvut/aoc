@@ -1,5 +1,6 @@
+export {};
 const charToPoints = (x: string): number => {
-  const c = x.codePointAt(0);
+  const c = x.codePointAt(0) as number;
   if (c >= 97) return c - 96;
   return c - 64 + 26;
 };
@@ -11,11 +12,11 @@ const part1 = (input: string[]) =>
     .map((x) => {
       const l = x.length,
         h = l / 2,
-        p = [{}, {}];
+        p: [Record<string, boolean>, Record<string, boolean>] = [{}, {}];
       for (let i = 0; i < l; i++) {
         p[Math.floor(i / h)][x[i]] = true;
       }
-      return Object.keys(p[0]).find((x) => p[1][x]);
+      return Object.keys(p[0]).find((x) => p[1][x]) as string;
     })
     .map(charToPoints)
     .reduce(sum, 0);
@@ -33,7 +34,7 @@ const part2 = (input: string[]) =>
     )
     .map((lines) =>
       lines.map((line) => {
-        const r = {};
+        const r: Record<string, boolean> = {};
         Array.from(line).forEach((c) => (r[c] = true));
         return r;
       })
@@ -45,7 +46,7 @@ const part2 = (input: string[]) =>
     .map(charToPoints)
     .reduce(sum, 0);
 
-const inputSample = `vJrwpWtwJgWrhcsFMMfFFhFp
+const _inputSample = `vJrwpWtwJgWrhcsFMMfFFhFp
 jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
 PmmdzqPrVvPwwTWBwg
 wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn

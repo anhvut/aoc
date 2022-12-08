@@ -1,18 +1,22 @@
 export {};
-const fs = require('fs');
-const nbs: number[] = fs.readFileSync(__filename.replace(/\.js/, '.txt'), 'utf-8').split(',').map(x => +x);
+import fs from 'fs';
+const nbs: number[] = fs
+  .readFileSync(__filename.replace(/\.[jt]s/, '.txt'), 'utf-8')
+  .split(',')
+  .map((x) => +x);
 
-function *run(input: number[], program: number[]): Generator<number, number, number> {
-  let pos: number = 0;
-  let result: number = 0;
-  let relativeBase: number = 0;
+function* run(input: number[], program: number[]): Generator<number, number, number> {
+  let pos = 0;
+  let result = 0;
+  let relativeBase = 0;
   const mem: number[] = program.slice();
-  const getValue = (mode: number, param: number) => (mode === 1 ? param : mode === 2 ? mem[relativeBase + param] : mem[param]) ?? 0;
+  const getValue = (mode: number, param: number) =>
+    (mode === 1 ? param : mode === 2 ? mem[relativeBase + param] : mem[param]) ?? 0;
   const getDestinationAddress = (mode: number, param: number) => {
     if (mode === 0) return param;
     if (mode === 2) return relativeBase + param;
     throw new Error(`Invalid destination mode ${mode}`);
-  }
+  };
   while (pos < mem.length) {
     const instruction = mem[pos];
     const opcode = instruction % 100;
@@ -76,6 +80,7 @@ function *run(input: number[], program: number[]): Generator<number, number, num
         throw Error(`Unknown opcode ${opcode} at position ${pos}`);
     }
   }
+  return 0;
 }
 
 type Vector = number[];
@@ -91,14 +96,17 @@ const getRotationMatrix = (angle: number, round?: boolean): Matrix => {
     cos = Math.round(cos);
     sin = Math.round(sin);
   }
-  return [[cos, sin], [-sin, cos]];
+  return [
+    [cos, sin],
+    [-sin, cos],
+  ];
 };
 
 const matrixMultiply = (m1: Matrix, m2: Matrix): Matrix => {
   // m1 size (y1, x1) x m2 size (y2, x2) => size (y3=y1, x3=x2) - x1 must be equal y2
-  const result = [];
+  const result: Matrix = [];
   for (let yTarget = 0; yTarget < m1.length; yTarget++) {
-    const line = [];
+    const line: Vector = [];
     result.push(line);
     for (let xTarget = 0; xTarget < m2[0].length; xTarget++) {
       let cell = 0;
@@ -113,23 +121,31 @@ const matrixMultiply = (m1: Matrix, m2: Matrix): Matrix => {
 
 const matrixVectorMultiply = (m: Matrix, p: Vector): Vector => matrixMultiply([p], m)[0];
 
-const vectorAdd = (pt1, pt2) => pt1.map((x, i) => x + pt2[i]);
+const vectorAdd = (pt1: Vector, pt2: Vector) => pt1.map((x, i) => x + pt2[i]);
 
-function displayGrid(topLeft: number[], bottomRight: number[], map: Record<string, number>, position: Vector, direction: Vector) {
-  const grid: Matrix = Array(bottomRight[1] - topLeft[1] + 1).fill(0).map(() => Array(bottomRight[0] - topLeft[0] + 1).fill(-1));
+function displayGrid(
+  topLeft: number[],
+  bottomRight: number[],
+  map: Record<string, number>,
+  position: Vector,
+  direction: Vector
+) {
+  const grid: Matrix = Array(bottomRight[1] - topLeft[1] + 1)
+    .fill(0)
+    .map(() => Array(bottomRight[0] - topLeft[0] + 1).fill(-1));
   for (const [key, value] of Object.entries(map)) {
     const [x, y] = deserializePoint(key);
     grid[y - topLeft[1]][x - topLeft[0]] = value;
   }
-  const display: string[][] = grid.map(line => line.map(x => x === -1 ? ' ' : x === 0 ? '.' : '#'));
+  const display: string[][] = grid.map((line) => line.map((x) => (x === -1 ? ' ' : x === 0 ? '.' : '#')));
   const directionKey = serializePoint(direction);
   display[position[1] - topLeft[1]][position[0] - topLeft[0]] = {
     '0_1': '^',
     '1_0': '>',
     '0_-1': 'v',
-    '-1_0': '<'
+    '-1_0': '<',
   }[directionKey];
-  display.reverse().forEach(line => console.log(line.join('')));
+  display.reverse().forEach((line) => console.log(line.join('')));
 }
 
 const paint = (startColor: number): number => {
@@ -137,7 +153,7 @@ const paint = (startColor: number): number => {
   const rotateRight = getRotationMatrix(-Math.PI / 2, true);
   const generator = run([startColor], nbs);
   let position: Vector = [0, 0];
-  let currentDirection: Vector = [0, 1]
+  let currentDirection: Vector = [0, 1];
   const map: Record<string, number> = {};
   map[serializePoint(position)] = startColor;
   let topLeft: Vector = [0, 0];
@@ -156,10 +172,10 @@ const paint = (startColor: number): number => {
   }
   displayGrid(topLeft, bottomRight, map, position, currentDirection);
   return Object.values(map).length;
-}
+};
 
 const part1 = (): number => paint(0);
 const part2 = (): number => paint(1);
 
-console.log(part1())
-console.log(part2())
+console.log(part1());
+console.log(part2());

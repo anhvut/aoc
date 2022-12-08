@@ -1,18 +1,22 @@
 export {};
-const fs = require('fs');
-const nbs: number[] = fs.readFileSync(__filename.replace(/\.js/, '.txt'), 'utf-8').split(',').map(x => +x);
+import fs from 'fs';
+const nbs: number[] = fs
+  .readFileSync(__filename.replace(/\.[jt]s/, '.txt'), 'utf-8')
+  .split(',')
+  .map((x) => +x);
 
 function* run(input: number[], program: number[]): Generator<number, number, number[]> {
-  let pos: number = 0;
-  let result: number = 0;
-  let relativeBase: number = 0;
+  let pos = 0;
+  let result = 0;
+  let relativeBase = 0;
   const mem: number[] = program.slice();
-  const getValue = (mode: number, param: number) => (mode === 1 ? param : mode === 2 ? mem[relativeBase + param] : mem[param]) ?? 0;
+  const getValue = (mode: number, param: number) =>
+    (mode === 1 ? param : mode === 2 ? mem[relativeBase + param] : mem[param]) ?? 0;
   const getDestinationAddress = (mode: number, param: number) => {
     if (mode === 0) return param;
     if (mode === 2) return relativeBase + param;
     throw new Error(`Invalid destination mode ${mode}`);
-  }
+  };
   while (pos < mem.length) {
     const instruction = mem[pos];
     const opcode = instruction % 100;
@@ -76,6 +80,7 @@ function* run(input: number[], program: number[]): Generator<number, number, num
         throw Error(`Unknown opcode ${opcode} at position ${pos}`);
     }
   }
+  return 0;
 }
 
 type Vector = number[];
@@ -89,14 +94,16 @@ const vectorSub = (pt1: Vector, pt2: Vector) => pt1.map((x, i) => x - pt2[i]);
 const manhattanDistance = (pt1: Vector, pt2: Vector) => pt1.reduce((a, b, i) => a + Math.abs(b - pt2[i]), 0);
 
 function displayGrid(topLeft: number[], bottomRight: number[], map: Record<string, Cell>) {
-  const grid: Matrix = Array(bottomRight[1] - topLeft[1] + 1).fill(0).map(() => Array(bottomRight[0] - topLeft[0] + 1).fill(3));
+  const grid: Matrix = Array(bottomRight[1] - topLeft[1] + 1)
+    .fill(0)
+    .map(() => Array(bottomRight[0] - topLeft[0] + 1).fill(3));
   for (const [key, value] of Object.entries(map)) {
     const [x, y] = deserializePoint(key);
     grid[y - topLeft[1]][x - topLeft[0]] = value;
   }
-  const display: string[][] = grid.map(line => line.map(x => ['#', ' ', '*', ' ', '.'][x]));
+  const display: string[][] = grid.map((line) => line.map((x) => ['#', ' ', '*', ' ', '.'][x]));
   console.log('');
-  display.reverse().forEach(line => console.log(line.join(' ')));
+  display.reverse().forEach((line) => console.log(line.join(' ')));
 }
 
 const directionEnum = ([x, y]: Vector) => {
@@ -107,10 +114,15 @@ const directionEnum = ([x, y]: Vector) => {
 enum Cell {
   WALL = 0,
   FREE = 1,
-  OXYGEN = 2
+  OXYGEN = 2,
 }
 
-const AllDirections = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+const AllDirections = [
+  [-1, 0],
+  [1, 0],
+  [0, -1],
+  [0, 1],
+];
 
 type SearchTree = {
   position: Vector;
@@ -120,7 +132,7 @@ type SearchTree = {
 };
 const searchPath = (from: Vector, to: Vector, map: Record<string, Cell>): Vector[] | SearchTree => {
   if (manhattanDistance(from, to) === 0) return [];
-  const tree: SearchTree = {position: from, children: [], parent: null, distance: 0};
+  const tree: SearchTree = { position: from, children: [], parent: null, distance: 0 };
   const searches: SearchTree[] = [tree];
   const visited: Record<string, boolean> = {};
   visited[serializePoint(from)] = true;
@@ -128,15 +140,15 @@ const searchPath = (from: Vector, to: Vector, map: Record<string, Cell>): Vector
   while (searches.length > 0) {
     current = searches.shift();
     for (const direction of AllDirections) {
-      let nextPosition = vectorAdd(current.position, direction);
+      const nextPosition = vectorAdd(current.position, direction);
       const s = serializePoint(nextPosition);
       const cell = map[s];
       if ((cell === Cell.FREE || cell === Cell.OXYGEN) && !visited[s]) {
-        const child = {
+        const child: SearchTree = {
           position: nextPosition,
           children: [],
           parent: current,
-          distance: current.distance + 1
+          distance: current.distance + 1,
         };
         current.children.push(child);
         searches.push(child);
@@ -160,15 +172,13 @@ const searchPath = (from: Vector, to: Vector, map: Record<string, Cell>): Vector
 const main = (): void => {
   let position: Vector = [0, 0];
   let oxygenPosition: Vector = null;
-  const map: Record<string, Cell> = {[serializePoint(position)]: Cell.FREE};
-  let topLeft: Vector = [0, 0];
-  let bottomRight: Vector = [0, 0];
+  const map: Record<string, Cell> = { [serializePoint(position)]: Cell.FREE };
+  const topLeft: Vector = [0, 0];
+  const bottomRight: Vector = [0, 0];
 
   const generator = run([1], nbs);
-  let done = false;
   const next = (...input: number[]): number => {
     const nextOutput = generator.next(input);
-    if (nextOutput.done) done = true;
     return nextOutput.value;
   };
   next();
@@ -192,7 +202,7 @@ const main = (): void => {
       map[s] = tileId;
       if (tileId === Cell.FREE || tileId === Cell.OXYGEN) {
         if (tileId === Cell.OXYGEN) oxygenPosition = neighbour;
-        next(directionEnum(direction.map(x => -x)));
+        next(directionEnum(direction.map((x) => -x)));
         cellsToExplore.push(neighbour);
       }
     }
@@ -204,7 +214,7 @@ const main = (): void => {
 
   position = [0, 0];
   const pathToOxygen = searchPath(position, oxygenPosition, map) as Vector[];
-  const markedMap = {...map, [serializePoint(position)]: 4};
+  const markedMap = { ...map, [serializePoint(position)]: 4 };
   for (const step of pathToOxygen) markedMap[serializePoint(step)] = 4;
   markedMap[serializePoint(oxygenPosition)] = 2;
   displayGrid(topLeft, bottomRight, markedMap);
