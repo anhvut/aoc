@@ -1,18 +1,26 @@
-const fs = require('fs')
-const lines = fs.readFileSync(__dirname + '/aoc2020-21.txt', 'utf-8').split(/\r?\n/g);
+export {};
+import fs from 'fs';
 
-const foods = lines.map(line => line.replace(/,/g, '').slice(0, -1).split(' (contains ').map(x => x.split(' ')));
+const lines: string[] = fs.readFileSync(__filename.replace(/\.[jt]s$/, '.txt'), 'utf-8').split(/\r?\n/g);
 
-const intersection = (a, b) => {
-  const inA = Object.fromEntries(a.map(x => [x, true]));
-  return b.filter(x => inA[x]);
-}
+const foods = lines.map((line) =>
+  line
+    .replace(/,/g, '')
+    .slice(0, -1)
+    .split(' (contains ')
+    .map((x) => x.split(' '))
+);
+
+const intersection = (a: string[], b: string[]) => {
+  const inA = Object.fromEntries(a.map((x) => [x, true]));
+  return b.filter((x) => inA[x]);
+};
 
 function getPotentialIngredientsByAllergen() {
-  const potentialIngredientsByAllergen = {};
+  const potentialIngredientsByAllergen: Record<string, string[]> = {};
   for (const [ingredients, allergens] of foods) {
     for (const allergen of allergens) {
-      let knownIngredients = potentialIngredientsByAllergen[allergen];
+      const knownIngredients = potentialIngredientsByAllergen[allergen];
       if (!knownIngredients) potentialIngredientsByAllergen[allergen] = ingredients;
       else potentialIngredientsByAllergen[allergen] = intersection(ingredients, knownIngredients);
     }
@@ -22,15 +30,17 @@ function getPotentialIngredientsByAllergen() {
 
 const part1 = () => {
   const potentialIngredientsByAllergen = getPotentialIngredientsByAllergen();
-  const potentialAllergenIngredients = Object.fromEntries(Object.values(potentialIngredientsByAllergen).flatMap(x => x.map(y => [y, true])));
-  const safeIngredients = foods.flatMap(x => x[0]).filter(x => !potentialAllergenIngredients[x]);
+  const potentialAllergenIngredients = Object.fromEntries(
+    Object.values(potentialIngredientsByAllergen).flatMap((x) => x.map((y) => [y, true]))
+  );
+  const safeIngredients = foods.flatMap((x) => x[0]).filter((x) => !potentialAllergenIngredients[x]);
   return safeIngredients.length;
 };
 
 const part2 = () => {
   const potentialIngredientsByAllergen = getPotentialIngredientsByAllergen();
   const nbAllergen = Object.keys(potentialIngredientsByAllergen).length;
-  const identifiedAllergen = {};
+  const identifiedAllergen: Record<string, string> = {};
   do {
     for (const allergen of Object.keys(potentialIngredientsByAllergen)) {
       const ingredients = potentialIngredientsByAllergen[allergen];
@@ -39,12 +49,17 @@ const part2 = () => {
         identifiedAllergen[allergen] = ingredient;
         delete potentialIngredientsByAllergen[allergen];
         for (const otherAllergen of Object.keys(potentialIngredientsByAllergen)) {
-          potentialIngredientsByAllergen[otherAllergen] = potentialIngredientsByAllergen[otherAllergen].filter(x => x !== ingredient);
+          potentialIngredientsByAllergen[otherAllergen] = potentialIngredientsByAllergen[otherAllergen].filter(
+            (x) => x !== ingredient
+          );
         }
       }
     }
   } while (Object.keys(identifiedAllergen).length < nbAllergen);
-  return Object.entries(identifiedAllergen).sort(([al1], [al2]) => al1.localeCompare(al2)).map(x => x[1]).join(',');
+  return Object.entries(identifiedAllergen)
+    .sort(([al1], [al2]) => al1.localeCompare(al2))
+    .map((x) => x[1])
+    .join(',');
 };
 
 console.log(part1());

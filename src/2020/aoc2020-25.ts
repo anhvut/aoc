@@ -1,13 +1,16 @@
-const [cardPublicKey,doorPublicKey] = [19241437, 17346587];
+export {};
 
-const transform = (sn, endFct) => {
-  let value = 1, loopSize;
+const [cardPublicKey, doorPublicKey] = [19241437, 17346587];
+
+const transform = (sn: number, endFct: (i: number, value: number) => boolean) => {
+  let value = 1,
+    loopSize;
   for (loopSize = 0; !endFct(loopSize, value); loopSize++) value = (value * sn) % 20201227;
-  return {loopSize, value};
-}
+  return { loopSize, value };
+};
 
-const findLoopSize = (key) => transform(7, (i, value) => value === key).loopSize;
-const computeEncryptionKey = (loopSize, sn) => transform(sn, i => i === loopSize).value;
+const findLoopSize = (key: number) => transform(7, (_i: number, value: number) => value === key).loopSize;
+const computeEncryptionKey = (loopSize: number, sn: number) => transform(sn, (i: number) => i === loopSize).value;
 
 const part = () => {
   const cardLoopSize = findLoopSize(cardPublicKey);
