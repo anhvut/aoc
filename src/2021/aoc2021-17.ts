@@ -1,13 +1,20 @@
-const input = [[207, 263], [-115, -63]];
+export {};
 
-const part = ([[xMin, xMax], [yMin, yMax]]) => {
+const input = [
+  [207, 263],
+  [-115, -63],
+];
+
+const part = ([[xMin, xMax], [yMin, yMax]]: typeof input) => {
   let count = 0;
   let bestY = yMax;
   for (let x0 = 1; x0 <= xMax; x0++) {
     for (let y0 = yMin; y0 < 150; y0++) {
       let localBestY = yMax;
-      let xSpeed = x0, ySpeed = y0;
-      let xPos = 0, yPos = 0;
+      let xSpeed = x0,
+        ySpeed = y0;
+      let xPos = 0,
+        yPos = 0;
       let found = false;
       while (yPos >= yMin && !found) {
         xPos += xSpeed;
@@ -25,6 +32,6 @@ const part = ([[xMin, xMax], [yMin, yMax]]) => {
     }
   }
   return [bestY, count];
-}
+};
 
-console.log(part(input))
+console.log(part(input));

@@ -1,24 +1,25 @@
-const fs = require('fs')
+export {};
+import fs from 'fs';
 
-const lines = fs.readFileSync(__dirname + '/aoc2021-11.txt', 'utf-8').split(/\r?\n/);
-const input = lines.map(x => Array.from(x).map(y => +y));
+const lines: string[] = fs.readFileSync(__filename.replace(/\.[jt]s$/, '.txt'), 'utf-8').split(/\r?\n/g);
+const input = lines.map((x) => Array.from(x).map((y) => +y));
 const Y = input.length;
 const X = input[0].length;
 
-const iterate = (nbs) => {
+const iterate = (nbs: number[][]): [number[][], number[][], number] => {
   let nbFlash = 0;
-  const next = nbs.map(x => x.slice());
+  const next: number[][] = nbs.map((x) => x.slice());
   for (let y = 0; y < Y; y++) {
     for (let x = 0; x < X; x++) {
       next[y][x]++;
     }
   }
-  const flash = next.map(y => y.map(x => 0));
-  const impact = (x, y) => {
+  const flash = next.map((y) => y.map(() => 0));
+  const impact = (x: number, y: number) => {
     if (y >= 0 && y < Y && x >= 0 && x < X && !flash[y][x]) {
       next[y][x]++;
     }
-  }
+  };
   let done = true;
   do {
     done = true;
@@ -50,20 +51,24 @@ const iterate = (nbs) => {
 };
 
 const part1 = () => {
-  let r = 0, nbs = input, nb;
+  let r = 0,
+    nbs = input,
+    nb;
   for (let i = 0; i < 100; i++) {
     [nbs, , nb] = iterate(nbs);
     r += nb;
   }
   return r;
-}
+};
 
 const part2 = () => {
-  let i = 0, nbs = input, flash;
+  let i = 0,
+    nbs = input,
+    flash;
   do {
     i++;
     [nbs, flash] = iterate(nbs);
-  } while (flash.some(x => x.some(y => !y)));
+  } while (flash.some((x) => x.some((y) => !y)));
   return i;
 };
 

@@ -1,29 +1,30 @@
-const fs = require('fs')
+export {};
+import fs from 'fs';
 
-const lines = fs.readFileSync(__dirname + '/aoc2021-12.txt', 'utf-8').split(/\r?\n/);
+const lines: string[] = fs.readFileSync(__filename.replace(/\.[jt]s$/, '.txt'), 'utf-8').split(/\r?\n/g);
 
-const vertexByName = {};
-const smallVertex = {};
+const vertexByName: Record<string, boolean> = {};
+const smallVertex: Record<string, boolean> = {};
 
-const edgesByVertices = {};
+const edgesByVertices: Record<string, string[]> = {};
 
-const registerVertex = (a) => {
+const registerVertex = (a: string) => {
   if (!vertexByName[a]) {
     vertexByName[a] = true;
-    if (Array.from(a).every(x => 'a' <= x && x <= 'z')) smallVertex[a] = true;
+    if (Array.from(a).every((x) => 'a' <= x && x <= 'z')) smallVertex[a] = true;
   }
-}
+};
 
-const registerEdge = (a, b) => {
+const registerEdge = (a: string, b: string) => {
   let edges = edgesByVertices[a];
   if (!edges) {
     edges = [];
     edgesByVertices[a] = edges;
   }
   edges.push(b);
-}
+};
 
-lines.forEach(x => {
+lines.forEach((x) => {
   const [a, b] = x.split('-');
   registerVertex(a);
   registerVertex(b);
@@ -31,14 +32,14 @@ lines.forEach(x => {
   registerEdge(b, a);
 });
 
-function *visitAll(vertex, visited, path) {
+function* visitAll(vertex: string, visited: Record<string, boolean>, path: string[]): Generator<string[]> {
   for (const next of edgesByVertices[vertex]) {
     if (!visited[next]) {
       const newPath = [...path, next];
       if (smallVertex[next]) visited[next] = true;
       if (next === 'end') yield newPath;
       else {
-        yield *visitAll(next, visited, newPath);
+        yield* visitAll(next, visited, newPath);
       }
       delete visited[next];
     }
@@ -46,13 +47,18 @@ function *visitAll(vertex, visited, path) {
 }
 
 const part1 = () => {
-  const visited = {'start': true};
+  const visited = { start: true };
   const currentPath = ['start'];
   const paths = [...visitAll('start', visited, currentPath)];
   return paths.length;
-}
+};
 
-function *visitAll2(vertex, visited, path, visitedTwice) {
+function* visitAll2(
+  vertex: string,
+  visited: Record<string, number>,
+  path: string[],
+  visitedTwice: boolean
+): Generator<string[]> {
   for (const next of edgesByVertices[vertex]) {
     if ((!visitedTwice && visited[next] !== 2) || (visitedTwice && !visited[next])) {
       const newPath = [...path, next];
@@ -60,7 +66,7 @@ function *visitAll2(vertex, visited, path, visitedTwice) {
       const newVisitedTwice = visitedTwice || visited[next] === 2;
       if (next === 'end') yield newPath;
       else {
-        yield *visitAll2(next, visited, newPath, newVisitedTwice);
+        yield* visitAll2(next, visited, newPath, newVisitedTwice);
       }
       if (smallVertex[next]) visited[next]--;
     }
@@ -68,7 +74,7 @@ function *visitAll2(vertex, visited, path, visitedTwice) {
 }
 
 const part2 = () => {
-  const visited = {'start': 2};
+  const visited = { start: 2 };
   const currentPath = ['start'];
   const paths = [...visitAll2('start', visited, currentPath, false)];
   return paths.length;

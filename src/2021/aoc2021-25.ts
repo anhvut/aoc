@@ -1,10 +1,14 @@
-const fs = require('fs')
-const lines = fs.readFileSync(__dirname + '/aoc2021-25.txt', 'utf-8').split(/\r?\n/);
-const initialMap = lines.map(l => Array.from(l));
+export {};
+import fs from 'fs';
 
-const cloneMap = (map) => map.map(y => y.slice());
+const lines: string[] = fs.readFileSync(__filename.replace(/\.[jt]s$/, '.txt'), 'utf-8').split(/\r?\n/g);
 
-const moveRight = (map) => {
+type MAP = string[][];
+const initialMap: MAP = lines.map((l) => Array.from(l));
+
+const cloneMap = (map: MAP): MAP => map.map((y) => y.slice());
+
+const moveRight = (map: MAP) => {
   const r = cloneMap(map);
   for (let y = 0; y < map.length; y++) {
     for (let x = 0; x < map[0].length; x++) {
@@ -17,9 +21,9 @@ const moveRight = (map) => {
     }
   }
   return r;
-}
+};
 
-const moveDown = (map) => {
+const moveDown = (map: MAP) => {
   const r = cloneMap(map);
   for (let y = 0; y < map.length; y++) {
     let z = y + 1;
@@ -32,7 +36,7 @@ const moveDown = (map) => {
     }
   }
   return r;
-}
+};
 
 const part = () => {
   let nbRuns = 0;
@@ -46,6 +50,6 @@ const part = () => {
     nbRuns++;
   } while (!end);
   return nbRuns;
-}
+};
 
 console.log(part());

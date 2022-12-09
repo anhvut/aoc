@@ -1,14 +1,20 @@
-const fs = require('fs')
+export {};
+import fs from 'fs';
 
-const lines = fs.readFileSync(__dirname + '/aoc2021-15.txt', 'utf-8').split(/\r?\n/);
-const maze = lines.map(x => Array.from(x).map(y => +y));
+const lines: string[] = fs.readFileSync(__filename.replace(/\.[jt]s$/, '.txt'), 'utf-8').split(/\r?\n/g);
 
-const extendMaze = (maze) => {
-  const extendPoint = (n, i) => {
+type MAZE = number[][];
+type POINT = [number, number];
+type POINT_STR = `${number}_${number}`;
+
+const maze: MAZE = lines.map((x) => Array.from(x).map((y) => +y));
+
+const extendMaze = (maze: MAZE) => {
+  const extendPoint = (n: number, i: number) => {
     const v = n + i;
     return v >= 10 ? v - 9 : v;
-  }
-  const newMaze = maze.map(nbs => {
+  };
+  const newMaze = maze.map((nbs) => {
     const result = [];
     for (let i = 0; i < 5; i++) {
       for (const n of nbs) {
@@ -29,12 +35,12 @@ const extendMaze = (maze) => {
     }
   }
   return newMaze;
-}
+};
 
-const asKey = ([x, y]) => `${x}_${y}`;
-const fromKey = (s) => s.split('_').map(x => +x);
+const asKey = ([x, y]: POINT): POINT_STR => `${x}_${y}`;
+const fromKey = (s: POINT_STR): POINT => s.split('_').map((x) => +x) as POINT;
 
-function reconstructPath(cameFrom, currentKey) {
+function reconstructPath(cameFrom: Record<POINT_STR, POINT_STR>, currentKey: POINT_STR) {
   const totalPath = [currentKey];
   let prev = cameFrom[currentKey];
   while (prev) {
@@ -45,28 +51,29 @@ function reconstructPath(cameFrom, currentKey) {
   return totalPath;
 }
 
-function aStar(start, goal, h, maze) {
-  const ex = maze[0].length-1;
-  const ey = maze.length-1;
+function aStar(start: POINT, goal: POINT, h: (p: POINT) => number, maze: MAZE) {
+  const ex = maze[0].length - 1;
+  const ey = maze.length - 1;
   const INF = 100 * maze[0].length * maze.length;
 
-  function *findNeighbors(currentKey) {
+  function* findNeighbors(currentKey: POINT_STR): Generator<POINT> {
     const [x, y] = fromKey(currentKey);
-    if (x > 0) yield [x-1, y];
-    if (x < ex) yield [x+1, y];
-    if (y > 0) yield [x, y-1];
-    if (y < ey) yield [x, y+1];
+    if (x > 0) yield [x - 1, y];
+    if (x < ex) yield [x + 1, y];
+    if (y > 0) yield [x, y - 1];
+    if (y < ey) yield [x, y + 1];
   }
 
   const startKey = asKey(start);
   const goalKey = asKey(goal);
-  const openSet = {[startKey]: true};
-  const cameFrom = {};
-  const gScore = {[startKey]: 0};
-  const fScore = {[startKey]: h(start)};
-  let openSetKeys = Object.keys(openSet);
+  const openSet: Record<POINT_STR, boolean> = { [startKey]: true };
+  const cameFrom: Record<POINT_STR, POINT_STR> = {};
+  const gScore = { [startKey]: 0 };
+  const fScore = { [startKey]: h(start) };
+  let openSetKeys = Object.keys(openSet) as POINT_STR[];
   while (openSetKeys.length > 0) {
-    let currentKey = '', currentScore = INF;
+    let currentKey: POINT_STR,
+      currentScore = INF;
     for (const key of openSetKeys) {
       const score = fScore[key] ?? INF;
       if (score < currentScore) {
@@ -88,33 +95,33 @@ function aStar(start, goal, h, maze) {
         if (!openSet[neighborKey]) openSet[neighborKey] = true;
       }
     }
-    openSetKeys = Object.keys(openSet);
+    openSetKeys = Object.keys(openSet) as POINT_STR[];
   }
   return INF;
 }
 
-const dijkstra = (start, goal, maze) => {
-  const ex = maze[0].length-1;
-  const ey = maze.length-1;
+const dijkstra = (start: POINT, goal: POINT, maze: MAZE) => {
+  const ex = maze[0].length - 1;
+  const ey = maze.length - 1;
   const INF = 100 * maze[0].length * maze.length;
 
-  function *findNeighbors(currentKey) {
+  function* findNeighbors(currentKey: POINT_STR): Generator<POINT> {
     const [x, y] = fromKey(currentKey);
-    if (x > 0) yield [x-1, y];
-    if (x < ex) yield [x+1, y];
-    if (y > 0) yield [x, y-1];
-    if (y < ey) yield [x, y+1];
+    if (x > 0) yield [x - 1, y];
+    if (x < ex) yield [x + 1, y];
+    if (y > 0) yield [x, y - 1];
+    if (y < ey) yield [x, y + 1];
   }
 
   const startKey = asKey(start);
   const goalKey = asKey(goal);
-  const distanceTo = {[startKey]: 0};
-  const comeFrom = {};
+  const distanceTo: Record<POINT_STR, number> = { [startKey]: 0 };
+  const comeFrom: Record<POINT_STR, POINT_STR> = {};
 
   const queue = [startKey];
   while (queue.length > 0) {
     const currentKey = queue.shift();
-    let distanceToCurrent = distanceTo[currentKey];
+    const distanceToCurrent = distanceTo[currentKey];
     for (const neighbor of findNeighbors(currentKey)) {
       const neighborKey = asKey(neighbor);
       const d = maze[neighbor[1]][neighbor[0]];
@@ -131,9 +138,9 @@ const dijkstra = (start, goal, maze) => {
   return reconstructPath(comeFrom, goalKey);
 };
 
-const part = (maze) => {
-  const ex = maze[0].length-1;
-  const ey = maze.length-1;
+const part = (maze: MAZE) => {
+  const ex = maze[0].length - 1;
+  const ey = maze.length - 1;
   // const path = aStar([0, 0], [ex, ey], ([x, y]) => maze[y][x] + (ex-x) + (ey-y), maze);
   const path = dijkstra([0, 0], [ex, ey], maze);
   let score = -maze[0][0];
@@ -142,7 +149,7 @@ const part = (maze) => {
     score += maze[y][x];
   }
   return score;
-}
+};
 
 console.log(part(maze));
 console.log(part(extendMaze(maze)));
