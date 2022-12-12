@@ -44,10 +44,9 @@ const bfs = (maze: MAZE, start: POINT, goal: POINT): number | undefined => {
       const neighborKey = asKey(neighbor);
       if (dTotal < (distanceTo[neighborKey] ?? INF)) {
         distanceTo[neighborKey] = dTotal;
+        if (neighborKey === goalKey) return dTotal;
         comeFrom[neighborKey] = currentKey;
-        let i = 0;
-        while (i < queue.length && dTotal > distanceTo[queue[i]]) i++;
-        queue.splice(i, 0, neighborKey);
+        queue.push(neighborKey);
       }
     }
   }
@@ -86,12 +85,7 @@ const getStartsEnd = (maze: MAZE): [POINT[], POINT] => {
 const part2 = (maze0: MAZE) => {
   const maze = maze0.map((x) => x.map((y) => (y === 'S' ? 'a' : y)));
   const [starts, end] = getStartsEnd(maze);
-  let min = maze.length * maze[0].length;
-  for (const start of starts) {
-    const found = bfs(maze, start, end);
-    if (found !== undefined) min = Math.min(min, found);
-  }
-  return min;
+  return starts.reduce((agg, start) => Math.min(agg, bfs(maze, start, end) ?? Infinity), maze.length * maze[0].length);
 };
 
 const inputSample: string[][] = `Sabqponm
