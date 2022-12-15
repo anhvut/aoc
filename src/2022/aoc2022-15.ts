@@ -13,16 +13,14 @@ const parse = (input: string[]): Array<[number, number, number, number]> => {
   );
 };
 
-const getSegments = (x1: number, y1: number, x2: number, y2: number): Record<number, [number, number]> => {
+function* getSegments(x1: number, y1: number, x2: number, y2: number): Generator<[number, [number, number]]> {
   const d = Math.abs(x1 - x2) + Math.abs(y1 - y2);
-  const r: Record<number, [number, number]> = {};
   for (let i = -d; i <= d; i++) {
     const y = y1 + i;
     const j = d - Math.abs(i);
-    r[y] = [x1 - j, x1 + j];
+    yield [y, [x1 - j, x1 + j]];
   }
-  return r;
-};
+}
 
 const getSegment = (x1: number, y1: number, x2: number, y2: number, y: number): [number, number] => {
   const d = Math.abs(x1 - x2) + Math.abs(y1 - y2);
@@ -73,9 +71,7 @@ const part2 = (input: string[]) => {
   console.timeEnd('init segments');
   console.time('get segments');
   for (const line of lines) {
-    const segments = getSegments(...line);
-    for (const [ys, segment] of Object.entries(segments)) {
-      const y = +ys;
+    for (const [y, segment] of getSegments(...line)) {
       if (y >= 0 && y < bound) segmentsByY[y].push(segment);
     }
   }
