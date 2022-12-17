@@ -92,290 +92,19 @@ const part1 = (input: string[]) => {
   return result;
 };
 
-function* explorePathsBis(
-  from: VALVE_ID,
-  availableValves: VALVE_ID[],
-  remainingMn: number,
-  dist: Record<VALVE_ID, Record<VALVE_ID, number>>,
-  valveById: Record<VALVE_ID, VALVE>
-): Generator<number> {
-  function* innerExplore(
-    from: VALVE_ID,
-    to: VALVE_ID,
-    valveOpen: VALVE_ID[],
-    elapsed: number,
-    availableValves: VALVE_ID[],
-    totalPressure: number,
-    pressureByMn: number,
-    remainingMn: number
-  ): Generator<number> {
-    if (elapsed < dist[from][to] && remainingMn > 0) {
-      yield* innerExplore(
-        from,
-        to,
-        valveOpen,
-        elapsed + 1,
-        availableValves,
-        totalPressure + pressureByMn,
-        pressureByMn,
-        remainingMn - 1
-      );
-      return;
+function* generateSubsetsWithComplementary<T>(set: T[]): Generator<[T[], T[]]> {
+  const length = set.length;
+  const max_nb = Math.pow(2, length);
+  let c, j, k;
+
+  for (c = 0; c < max_nb; c++) {
+    const a: T[] = [];
+    const b: T[] = [];
+    for (j = 0, k = 1; j < length; j++, k <<= 1) {
+      if ((c & k) > 0) a.push(set[j]);
+      else b.push(set[j]);
     }
-    remainingMn--;
-    totalPressure += pressureByMn;
-    from = to;
-    pressureByMn += valveById[to].flow;
-    let canExploreFurther = false;
-    for (const nextValve of availableValves) {
-      const neededMn = dist[from][nextValve] + 1;
-      const nextRemainingMn = remainingMn - neededMn;
-      if (nextRemainingMn < 0) continue;
-      canExploreFurther = true;
-      yield* innerExplore(
-        from,
-        nextValve,
-        [...valveOpen, nextValve],
-        1,
-        availableValves.filter((x) => x !== nextValve),
-        totalPressure + pressureByMn,
-        pressureByMn,
-        remainingMn - 1
-      );
-    }
-    if (!canExploreFurther) {
-      yield remainingMn * pressureByMn + totalPressure;
-    }
-  }
-
-  for (const nextValve of availableValves) {
-    const nextAvailable = availableValves.filter((x) => x !== nextValve);
-    yield* innerExplore(from, nextValve, [nextValve], 1, nextAvailable, 0, 0, remainingMn - 1);
-  }
-}
-
-const part1Bis = (input: string[]) => {
-  console.time('total part 1 bis');
-  const [valves, valveById] = parse(input);
-  const dist = Object.fromEntries(valves.map((x) => [x.valve, buildDist(x.valve, valveById)]));
-  const valveIdWithFlow = valves.filter((x) => x.flow > 0).map((x) => x.valve);
-
-  let result = 0;
-  for (const c of explorePathsBis('AA', valveIdWithFlow, 30, dist, valveById)) result = Math.max(result, c);
-
-  console.timeEnd('total part 1 bis');
-  return result;
-};
-
-function* explorePaths2(
-  from: VALVE_ID,
-  availableValves: VALVE_ID[],
-  remainingMn: number,
-  dist: Record<VALVE_ID, Record<VALVE_ID, number>>,
-  valveById: Record<VALVE_ID, VALVE>
-): Generator<number> {
-  function* innerExplore2(
-    from: VALVE_ID,
-    to: VALVE_ID,
-    valveOpen: VALVE_ID[],
-    elapsed: number,
-    from2: VALVE_ID,
-    to2: VALVE_ID,
-    valveOpen2: VALVE_ID[],
-    elapsed2: number,
-    availableValves: VALVE_ID[],
-    totalPressure: number,
-    pressureByMn: number,
-    remainingMn: number
-  ): Generator<number> {
-    const dist1 = dist[from][to];
-    const dist2 = dist[from2][to2];
-    const gap = Math.min(dist1 - elapsed, dist2 - elapsed2, remainingMn);
-    remainingMn -= gap;
-    totalPressure += pressureByMn*gap;
-    elapsed += gap;
-    elapsed2 += gap;
-    if (remainingMn === 0) {
-      yield totalPressure;
-      return
-    }
-    remainingMn--;
-    totalPressure += pressureByMn;
-    let advance = false;
-    if (elapsed >= dist1) {
-      from = to;
-      pressureByMn += valveById[to].flow;
-      advance = true;
-    }
-    let advance2 = false;
-    if (elapsed2 >= dist2) {
-      from2 = to2;
-      pressureByMn += valveById[to2].flow;
-      advance2 = true;
-    }
-    elapsed++;
-    elapsed2++;
-
-    if (advance && !advance2) {
-      let canExplore = false;
-      for (const nextValve of availableValves) {
-        const neededMn = dist[from][nextValve] + 1;
-        const nextRemainingMn = remainingMn - neededMn;
-        if (nextRemainingMn < 0) continue;
-        canExplore = true;
-
-        yield* innerExplore2(
-          to,
-          nextValve,
-          [...valveOpen, nextValve],
-          0,
-          from2,
-          to2,
-          valveOpen2,
-          elapsed2,
-          availableValves.filter((x) => x !== nextValve),
-          totalPressure,
-          pressureByMn,
-          remainingMn
-        );
-      }
-      if (!canExplore) {
-        // fallback 1 stays same place
-        yield* innerExplore2(
-          from,
-          from,
-          valveOpen,
-          elapsed,
-          from2,
-          to2,
-          valveOpen2,
-          0,
-          availableValves,
-          totalPressure,
-          pressureByMn,
-          remainingMn
-        );
-      }
-    } else if (advance2 && !advance) {
-      let canExplore = false;
-      for (const nextValve2 of availableValves) {
-        const neededMn = dist[from2][nextValve2] + 1;
-        const nextRemainingMn = remainingMn - neededMn;
-        if (nextRemainingMn < 0) continue;
-        canExplore = true;
-
-        yield* innerExplore2(
-          from,
-          to,
-          valveOpen,
-          elapsed,
-          to2,
-          nextValve2,
-          [...valveOpen2, nextValve2],
-          0,
-          availableValves.filter((x) => x !== nextValve2),
-          totalPressure,
-          pressureByMn,
-          remainingMn
-        );
-      }
-      if (!canExplore) {
-        // fallback 2 stays same place
-        yield* innerExplore2(
-          from,
-          to,
-          valveOpen,
-          elapsed,
-          from2,
-          from2,
-          valveOpen2,
-          0,
-          availableValves,
-          totalPressure,
-          pressureByMn,
-          remainingMn
-        );
-      }
-    } else {
-      let canExplore = false;
-      for (const nextValve of availableValves) {
-        const neededMn = dist[from][nextValve] + 1;
-        const nextRemainingMn = remainingMn - neededMn;
-        if (nextRemainingMn < 0) continue;
-        canExplore = true;
-
-        let canExplore2 = false;
-        for (const nextValve2 of availableValves) {
-          const neededMn2 = dist[from2][nextValve2] + 1;
-          const nextRemainingMn2 = remainingMn - neededMn2;
-          if (nextValve === nextValve2 || nextRemainingMn2 < 0) continue;
-
-          canExplore2 = true;
-          yield* innerExplore2(
-            from,
-            nextValve,
-            [...valveOpen, nextValve],
-            1,
-            from2,
-            nextValve2,
-            [...valveOpen2, nextValve2],
-            1,
-            availableValves.filter((x) => x !== nextValve && x !== nextValve2),
-            totalPressure + pressureByMn,
-            pressureByMn,
-            remainingMn - 1
-          );
-        }
-        if (!canExplore2)
-          // fallback 2 stays same place
-          yield* innerExplore2(
-            from,
-            nextValve,
-            [...valveOpen, nextValve],
-            1,
-            from2,
-            from2,
-            valveOpen2,
-            1,
-            availableValves.filter((x) => x !== nextValve),
-            totalPressure + pressureByMn,
-            pressureByMn,
-            remainingMn - 1
-          );
-      }
-      if (!canExplore) {
-        // fallback 1 stays same place
-        for (const nextValve2 of availableValves) {
-          const neededMn2 = dist[from2][nextValve2] + 1;
-          const nextRemainingMn2 = remainingMn - neededMn2;
-          if (nextRemainingMn2 < 0) continue;
-
-          yield* innerExplore2(
-            from,
-            from,
-            valveOpen,
-            1,
-            from2,
-            nextValve2,
-            [...valveOpen2, nextValve2],
-            1,
-            availableValves.filter((x) => x !== nextValve2),
-            totalPressure + pressureByMn,
-            pressureByMn,
-            remainingMn - 1
-          );
-        }
-      }
-    }
-  }
-
-  for (let i = 0; i < availableValves.length; i++) {
-    for (let j = i + 1; j < availableValves.length; j++) {
-      const next = availableValves[i];
-      const next2 = availableValves[j];
-      const nextAvailable = availableValves.filter((x) => x !== next && x !== next2);
-      yield* innerExplore2(from, next, [next], 1, from, next2, [next2], 1, nextAvailable, 0, 0, remainingMn - 1);
-    }
+    yield [a, b];
   }
 }
 
@@ -383,11 +112,16 @@ const part2 = (input: string[]) => {
   console.time('total part 2');
   const [valves, valveById] = parse(input);
   const dist = Object.fromEntries(valves.map((x) => [x.valve, buildDist(x.valve, valveById)]));
-  const valveIdWithFlow = valves.filter((x) => x.flow > 0).map((x) => x.valve);
+  const valveFlow = valves.filter((x) => x.flow > 0).map((x) => x.valve);
 
   let result = 0;
-  for (const c of explorePaths2('AA', valveIdWithFlow, 26, dist, valveById)) result = Math.max(result, c);
-
+  for (const [valves1, valves2] of generateSubsetsWithComplementary(valveFlow.slice(1))) {
+    let r1 = 0;
+    for (const r of explorePaths('AA', [], [valveFlow[0], ...valves1], 0, 0, 26, dist, valveById)) r1 = Math.max(r, r1);
+    let r2 = 0;
+    for (const r of explorePaths('AA', [], valves2, 0, 0, 26, dist, valveById)) r2 = Math.max(r, r2);
+    result = Math.max(result, r1 + r2);
+  }
   console.timeEnd('total part 2');
   return result;
 };
@@ -465,7 +199,5 @@ Valve VJ has flow rate=0; tunnels lead to valves IH, RU`.split('\n');
 
 console.log(part1(inputSample));
 console.log(part1(inputReal));
-// console.log(part1Bis(inputSample));
-// console.log(part1Bis(inputReal));
 console.log(part2(inputSample));
 console.log(part2(inputReal));
