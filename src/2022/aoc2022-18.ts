@@ -1,30 +1,26 @@
 export {};
 
 type P3D = [number, number, number];
-type P3D_KEY = `${number},${number},${number}`
+type P3D_KEY = `${number},${number},${number}`;
 
 const point2Key = ([x, y, z]: P3D): P3D_KEY => `${x},${y},${z}`;
 
-const parse = (input: string[]): P3D[] => {
-  return input.map(l => l.split(',').map(x => +x) as P3D);
-}
+const parse = (input: string[]): P3D[] => input.map((l) => l.split(',').map((x) => +x) as P3D);
 
 function countFaces(points: P3D[]) {
   const registeredPoint: Record<P3D_KEY, boolean> = {};
   let nbFaces = 0;
+  const evaluate = (p: P3D) => {
+    if (!registeredPoint[point2Key(p)]) nbFaces++;
+    else nbFaces--;
+  };
   for (const [x, y, z] of points) {
-    if (!registeredPoint[point2Key([x - 1, y, z])]) nbFaces++;
-    else nbFaces--;
-    if (!registeredPoint[point2Key([x + 1, y, z])]) nbFaces++;
-    else nbFaces--;
-    if (!registeredPoint[point2Key([x, y - 1, z])]) nbFaces++;
-    else nbFaces--;
-    if (!registeredPoint[point2Key([x, y + 1, z])]) nbFaces++;
-    else nbFaces--;
-    if (!registeredPoint[point2Key([x, y, z - 1])]) nbFaces++;
-    else nbFaces--;
-    if (!registeredPoint[point2Key([x, y, z + 1])]) nbFaces++;
-    else nbFaces--;
+    evaluate([x - 1, y, z]);
+    evaluate([x + 1, y, z]);
+    evaluate([x, y - 1, z]);
+    evaluate([x, y + 1, z]);
+    evaluate([x, y, z - 1]);
+    evaluate([x, y, z + 1]);
     registeredPoint[point2Key([x, y, z])] = true;
   }
   return nbFaces;
@@ -41,11 +37,14 @@ const part1 = (input: string[]) => {
 const part2 = (input: string[]) => {
   console.time('part2');
   const points = parse(input);
-  const pointsKey: Record<P3D_KEY, boolean> = Object.fromEntries(points.map(p => [point2Key(p), true]));
-  const [[xMin, yMin, zMin], [xMax, yMax, zMax]] = points.reduce<[P3D, P3D]>(([[x1, y1, z1], [x2, y2, z2]], [x, y, z]) => [
-    [Math.min(x, x1), Math.min(y, y1), Math.min(z, z1)],
-    [Math.max(x, x2), Math.max(y, y2), Math.max(z, z2)]
-  ], [points[0], points[0]]);
+  const pointsKey: Record<P3D_KEY, boolean> = Object.fromEntries(points.map((p) => [point2Key(p), true]));
+  const [[xMin, yMin, zMin], [xMax, yMax, zMax]] = points.reduce<[P3D, P3D]>(
+    ([[x1, y1, z1], [x2, y2, z2]], [x, y, z]) => [
+      [Math.min(x, x1), Math.min(y, y1), Math.min(z, z1)],
+      [Math.max(x, x2), Math.max(y, y2), Math.max(z, z2)],
+    ],
+    [points[0], points[0]]
+  );
   const insidePoints: P3D[] = [];
   for (let x = xMin + 1; x < xMax; x++) {
     for (let y = yMin + 1; y < yMax; y++) {
@@ -56,11 +55,14 @@ const part2 = (input: string[]) => {
   }
 
   const isInside = ([x0, y0, z0]: P3D): boolean => {
-    const visited: Record<P3D_KEY, boolean> = Object.fromEntries(Object.keys(pointsKey).map(x => [x, true]));  // copy pointsKey
+    const visited: Record<P3D_KEY, boolean> = Object.fromEntries(Object.keys(pointsKey).map((x) => [x, true])); // copy pointsKey
     let toVisit = [
-      [x0-1, y0, z0], [x0+1, y0, z0],
-      [x0, y0-1, z0], [x0, y0+1, z0],
-      [x0, y0, z0-1], [x0, y0, z0+1],
+      [x0 - 1, y0, z0],
+      [x0 + 1, y0, z0],
+      [x0, y0 - 1, z0],
+      [x0, y0 + 1, z0],
+      [x0, y0, z0 - 1],
+      [x0, y0, z0 + 1],
     ];
     let reachBound = false;
     while (toVisit.length > 0) {
@@ -78,17 +80,17 @@ const part2 = (input: string[]) => {
       for (const [x, y, z] of toVisit) {
         const key = point2Key([x, y, z]);
         if (!visited[key]) {
-          tryAddNeighbour([x-1, y, z]);
+          tryAddNeighbour([x - 1, y, z]);
           if (reachBound) return false;
-          tryAddNeighbour([x+1, y, z]);
+          tryAddNeighbour([x + 1, y, z]);
           if (reachBound) return false;
-          tryAddNeighbour([x, y-1, z]);
+          tryAddNeighbour([x, y - 1, z]);
           if (reachBound) return false;
-          tryAddNeighbour([x, y+1, z]);
+          tryAddNeighbour([x, y + 1, z]);
           if (reachBound) return false;
-          tryAddNeighbour([x, y, z-1]);
+          tryAddNeighbour([x, y, z - 1]);
           if (reachBound) return false;
-          tryAddNeighbour([x, y, z+1]);
+          tryAddNeighbour([x, y, z + 1]);
           if (reachBound) return false;
           visited[key] = true;
         }
@@ -98,7 +100,7 @@ const part2 = (input: string[]) => {
     return true;
   };
 
-  const prisonedPoints = insidePoints.filter(p => isInside(p));
+  const prisonedPoints = insidePoints.filter((p) => isInside(p));
   const result = countFaces(points) - countFaces(prisonedPoints);
   console.timeEnd('part2');
   return result;
