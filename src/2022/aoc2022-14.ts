@@ -13,14 +13,12 @@ const parse = (input: string[]): POINT[] => {
     for (const c of line.split(' -> ')) {
       const to = str2Point(c as POINT_STR);
       if (from) {
-        let dx = to[0] - from[0];
-        let dy = to[1] - from[1];
+        const dx = Math.sign(to[0] - from[0]);
+        const dy = Math.sign(to[1] - from[1]);
         let [x, y] = from;
         if (dx) {
-          dx /= Math.abs(dx);
           for (let lx = to[0] + dx; x !== lx; x += dx) points[point2Str(x, y)] = true;
         } else {
-          dy /= Math.abs(dy);
           for (let ly = to[1] + dy; y !== ly; y += dy) points[point2Str(x, y)] = true;
         }
       }
