@@ -61,91 +61,55 @@ const parse = (input: string[]) => {
   });
 };
 
-const evaluateBfs = (blueprint: BLUEPRINT, partRemaining: number, beamSize: number): number => {
-  console.time('evaluate bfs');
+const evaluate = (blueprint: BLUEPRINT, totalTime: number): number => {
+  console.time('evaluate');
+
+  let bestResult = 0;
+  const thresholdBuy: Record<RES, number> = {
+    ore: Math.max(...blueprint.robots.map(x => x.cost.ore)) * 1.5,
+    clay: Math.max(...blueprint.robots.map(x => x.cost.clay)),
+    obsidian: Math.max(...blueprint.robots.map(x => x.cost.obsidian)),
+    geode: Infinity
+  }
 
   const resNameToInt = Object.fromEntries(resName.map((x, i) => [x, i]));
-
-  function getNextToSearch(inputRun: RUN): RUN[] {
-    if (!inputRun.remaining) return [];
-
-    // buy phase
-    const canBuy = blueprint.robots.filter((r) => resName.every((res) => inputRun.have[res] >= r.cost[res]));
-    const runsWithBuy = canBuy.map((robot) => {
-      const runBuy = cloneRun(inputRun);
-      resName.forEach((res) => (runBuy.have[res] -= robot.cost[res]));
-      runBuy.path.push(resNameToInt[robot.produce]);
-      return runBuy;
-    });
-    const runNoBuy = cloneRun(inputRun);
-    runNoBuy.path.push(9);
-    const allRuns = [runNoBuy, ...runsWithBuy];
-
-    // earning phase
-    allRuns.forEach((run) => {
-      for (const res of resName) run.have[res] += run.earn[res];
-      run.remaining--;
-    });
-
-    // new robot bought phase
-    canBuy.forEach((r, i) => runsWithBuy[i].earn[r.produce]++);
-    return allRuns;
-  }
-
-  function estimateGreedy(inputRun: RUN): number {
-    const run = cloneRun(inputRun);
-    const tryBuy = (res: RES) => {
-      const robot = blueprint.robots.find((r) => r.produce === res);
-      if (resName.every((res) => run.have[res] >= robot.cost[res])) {
-        // earn
-        for (const res of resName) run.have[res] += run.earn[res];
-        // buy
-        resName.forEach((res) => (run.have[res] -= robot.cost[res]));
-        // new robot produced
-        run.earn[res]++;
-        run.path.push(resNameToInt[res]);
-        return true;
-      }
-      return false;
-    };
-
-    for (let i = 0; i < run.remaining; i++) {
-      let bought = tryBuy(RES.geode);
-      if (!bought) bought = tryBuy(RES.obsidian);
-      if (!bought) bought = tryBuy(RES.clay);
-      if (!bought) bought = tryBuy(RES.ore);
-      if (!bought) {
-        run.path.push(9);
-        for (const res of resName) run.have[res] += run.earn[res];
-      }
+  const search = (run: RUN) => {
+    // end of compute
+    if (run.remaining <= 0) {
+      bestResult = Math.max(bestResult, run.have.geode);
+      return;
     }
-    return run.have.geode;
+    bestResult = Math.max(bestResult, run.have.geode + run.remaining*run.earn.geode);
+
+    // try next robot
+    const neededTypes = resName.filter(res => run.have[res] < thresholdBuy[res]);
+    for (const nextType of neededTypes) {
+      const {cost} = blueprint.robots.find(r => r.produce === nextType);
+      // time to have resource + time to build (= 1)
+      const time = Math.max(...resName.map(res => run.have[res] >= cost[res] ? 0 :
+        Math.ceil((cost[res] - run.have[res]) / run.earn[res]))) + 1;
+      if (!isFinite(time) || time > run.remaining) continue;
+      const newRun = cloneRun(run);
+      resName.forEach(res => {
+        newRun.have[res] += time * newRun.earn[res] - cost[res];
+      });
+      newRun.remaining -= time;
+      newRun.earn[nextType]++;
+      newRun.path.push(resNameToInt[nextType]);
+      search(newRun);
+    }
   }
 
-  let bestScore = 0;
-  let toSearch: RUN[] = [makeRun(makeCost(1), makeCost(), [], partRemaining)];
-  do {
-    const nextWithScore = toSearch
-      .flatMap((r) => getNextToSearch(r))
-      .map((r) => [estimateGreedy(r), r] as [number, RUN]);
-    nextWithScore.sort(([score1], [score2]) => score2 - score1);
-    const reduced = nextWithScore.slice(0, beamSize);
-    toSearch = reduced.map(([_, r]) => r);
-    bestScore = reduced.reduce((r, [s]) => Math.max(r, s), bestScore);
-  } while (toSearch.length > 0);
-  console.timeEnd('evaluate bfs');
-  console.log(`Evaluate blueprint ${blueprint.id} - time: ${partRemaining} - result ${bestScore}`);
-  return bestScore;
-};
+  search(makeRun(makeCost(1), makeCost(0), [], totalTime));
+  console.timeEnd('evaluate');
+  console.log(`Evaluate blueprint ${blueprint.id} - time: ${totalTime} - result ${bestResult}`);
+  return bestResult;
+}
 
 const part1 = (input: string[]) => {
   console.time('part1');
   const blueprints = parse(input);
-  const hack: Record<number, number> = {
-    5: 675000,
-    7: 28000,
-  };
-  const result = blueprints.reduce((r, b, i) => r + evaluateBfs(b, 24, hack[i] ?? 1000) * b.id, 0);
+  const result = blueprints.reduce((r, b) => r + evaluate(b, 24) * b.id, 0);
   console.timeEnd('part1');
   return result;
 };
@@ -153,7 +117,7 @@ const part1 = (input: string[]) => {
 const part2 = (input: string[]) => {
   console.time('part2');
   const blueprints = parse(input);
-  const result = blueprints.slice(0, 3).reduce((r, b) => r * evaluateBfs(b, 32, 1000), 1);
+  const result = blueprints.slice(0, 3).reduce((r, b) => r * evaluate(b, 32), 1);
   console.timeEnd('part2');
   return result;
 };
