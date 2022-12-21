@@ -57,13 +57,87 @@ const ROOT = 'root';
 const HUMAN = 'humn';
 
 const part1 = (input: string[]) => {
+  console.time('part 1');
   const equations = parse(input);
   const equationByName = getEquationByName(equations);
   simplify(equations, equationByName)
+  console.timeEnd('part 1');
   return equationByName[ROOT].value;
 };
 
-const part2 = (input: string[], sign: number) => {
+const part2 = (input: string[]) => {
+  console.time('part 2');
+  const originalEquations = parse(input);
+  const originalEquationByName = getEquationByName(originalEquations);
+  const equations = originalEquations.filter(x => x.name !== ROOT && x.name !== HUMAN);
+  let equationByName = getEquationByName(equations);
+  simplify(equations, equationByName);
+  const {op1, op2} = originalEquationByName[ROOT];
+  let newKnownOperand, operandValue;
+  if (equationByName[op1].value !== undefined) {
+    operandValue = equationByName[op1].value;
+    newKnownOperand = op2;
+  } else {
+    operandValue = equationByName[op2].value;
+    newKnownOperand = op1;
+  }
+
+  let operandToInvert = HUMAN;
+  const alreadyInverted: Record<string, boolean> = {};
+  while (operandToInvert !== newKnownOperand) {
+    const equation = equations.find(x => (x.op1 === operandToInvert || x.op2 === operandToInvert) && !alreadyInverted[x.name]);
+    const nextOp = equation.name;
+    if (equation.op1 === operandToInvert) {
+      switch (equation.op) {
+        case '+':
+          // nextOp = operandToInvert + operand2 => operandToInvert = nextOp - operand2
+          Object.assign(equation, {name: operandToInvert, op1: nextOp, op: '-'});
+          break;
+        case '-':
+          // nextOp = operandToInvert - operand2 => operandToInvert = nextOp + operand2
+          Object.assign(equation, {name: operandToInvert, op1: nextOp, op: '+'});
+          break;
+        case '*':
+          // nextOp = operandToInvert * operand2 => operandToInvert = nextOp / operand2
+          Object.assign(equation, {name: operandToInvert, op1: nextOp, op: '/'});
+          break;
+        case '/':
+          // nextOp = operandToInvert / operand2 => operandToInvert = nextOp * operand2
+          Object.assign(equation, {name: operandToInvert, op1: nextOp, op: '*'});
+          break;
+      }
+    } else {
+      switch (equation.op) {
+        case '+':
+          // nextOp = operand1 + operandToInvert => operandToInvert = nextOp - operand1
+          Object.assign(equation, {name: operandToInvert, op1: nextOp, op2: equation.op1, op: '-'});
+          break;
+        case '-':
+          // nextOp = operand1 - operandToInvert => operandToInvert = operand1 - nextOp
+          Object.assign(equation, {name: operandToInvert, op2: nextOp});
+          break;
+        case '*':
+          // nextOp = operand1 * operandToInvert => operandToInvert = nextOp / operand1
+          Object.assign(equation, {name: operandToInvert, op1: nextOp, op2: equation.op1, op: '/'});
+          break;
+        case '/':
+          // nextOp = operand1 / operandToInvert => operandToInvert = operand1 / nextOp
+          Object.assign(equation, {name: operandToInvert, op2: nextOp});
+          break;
+      }
+    }
+    alreadyInverted[operandToInvert] = true;
+    operandToInvert = nextOp;
+  }
+  equations.push({name: newKnownOperand, value: operandValue})
+  equationByName = getEquationByName(equations);
+  simplify(equations, equationByName);
+  console.timeEnd('part 2');
+  return equationByName[HUMAN].value;
+};
+
+const part2Dichotomy = (input: string[], sign: number) => {
+  console.time('part 2 with dichotomy');
   const originalEquations = parse(input);
   let min = Number.MIN_SAFE_INTEGER;
   let max = Number.MAX_SAFE_INTEGER;
@@ -80,6 +154,7 @@ const part2 = (input: string[], sign: number) => {
     if (diff < 0) min = mid;
     else if (diff > 0) max = mid;
   } while (diff !== 0);
+  console.timeEnd('part 2 with dichotomy');
   return dict[HUMAN].value;
 };
 
@@ -96,6 +171,21 @@ sjmn: drzm * dbpl
 sllz: 4
 pppw: cczh / lfqf
 lgvd: ljgn * ptdq
+drzm: hmdt - zczc
+hmdt: 32`.split('\n');
+`pppw: root - sjmn
+root: 300
+dbpl: 5
+lgvd: cczh - sllz
+zczc: 2
+humn: ptdq + dvpt
+dvpt: 3
+lfqf: 4
+ljgn: 2
+sjmn: drzm * dbpl
+sllz: 4
+cczh: pppw * lfqf
+ptdq: lgvd / ljgn
 drzm: hmdt - zczc
 hmdt: 32`.split('\n');
 
@@ -2367,5 +2457,7 @@ tpwp: 2`.split('\n');
 
 console.log(part1(inputSample));
 console.log(part1(inputReal));
-console.log(part2(inputSample, 1));
-console.log(part2(inputReal, -1));
+console.log(part2Dichotomy(inputSample, 1));
+console.log(part2Dichotomy(inputReal, -1));
+console.log(part2(inputSample));
+console.log(part2(inputReal));
