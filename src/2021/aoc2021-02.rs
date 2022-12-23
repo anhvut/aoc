@@ -17,7 +17,7 @@ fn to_direction(d: &str) -> Option<Direction> {
 }
 
 type Reducer = fn((i32, i32, i32), &(Direction, i32)) -> (i32, i32, i32);
-fn compute(nbs: &Vec<(Direction, i32)>, reducer: Reducer) -> i32 {
+fn compute(nbs: &[(Direction, i32)], reducer: Reducer) -> i32 {
     let (horiz, depth, _): (i32, i32, i32) = nbs.iter().fold((0, 0, 0), reducer);
     horiz * depth
 }
@@ -47,16 +47,16 @@ fn main() {
     let lines = helper::read_lines("./src/2021/aoc2021-02.txt").unwrap();
     let commands: Vec<(Direction, i32)> = lines
         .flat_map(|c| c.map(|n| {
-            let tokens = n.split(" ").collect::<Vec<&str>>();
-            (tokens.get(0).map(|t| to_direction(t)).flatten(),
-             tokens.get(1).map(|t| t.parse::<i32>().ok()).flatten())
+            let tokens = n.split(' ').collect::<Vec<&str>>();
+            (tokens.first().and_then(|t| to_direction(t)),
+             tokens.get(1).and_then(|t| t.parse::<i32>().ok()))
         }))
         .flat_map(|t| match t {
             (Some(cmd), Some(nb)) => Some((cmd, nb)),
             _ => None
         })
         .collect();
-    println!("Commands {:?}", commands);
+    println!("Commands {commands:?}");
     println!("Part1: {}", compute(&commands, reducer1));
     println!("Part2: {}", compute(&commands, reducer2));
 }
