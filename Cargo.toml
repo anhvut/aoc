@@ -16,4 +16,8 @@ path = "src/2021/aoc2021-01.rs"
 name = "aoc2021-02"
 path = "src/2021/aoc2021-02.rs"
 
+[[bin]]
+name = "aoc2022-01"
+path = "src/2022/aoc2022-01.rs"
+
 [dependencies]
