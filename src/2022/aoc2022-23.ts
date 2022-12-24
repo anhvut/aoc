@@ -110,6 +110,7 @@ function runTurn(map: string[][], i: number) {
 }
 
 const part1 = (input: string[]) => {
+  console.time('part 1');
   let map = parse(input);
   for (let turn = 0; turn < 10; turn++) {
     map = eventuallyExtend(map);
@@ -117,10 +118,12 @@ const part1 = (input: string[]) => {
     if (map.length < 20) display(map, turn+1);
   }
   let [minX, minY, maxX, maxY] = getBounds(map);
+  console.timeEnd('part 1');
   return (maxX - minX + 1) * (maxY - minY + 1) - getCount(map);
 };
 
 const part2 = (input: string[]) => {
+  console.time('part 2');
   let map = parse(input);
   let turn = 0;
   while (true) {
@@ -134,6 +137,7 @@ const part2 = (input: string[]) => {
     })) break;
     map = newMap;
   }
+  console.timeEnd('part 2');
   return turn;
 };
 
