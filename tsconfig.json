@@ -14,7 +14,7 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "strictNullChecks": false,
-    "noUnusedParameters": true,
+    "noUnusedParameters": false,
     "noUnusedLocals": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": false,
