@@ -8,7 +8,7 @@ const nbs: number[] = fs
   .filter(Boolean)
   .map((x) => +x);
 
-function* run(input: number[], program: number[]): Generator<number, number, number> {
+function* run(input: number[], program: number[]): Generator<number, number, number[]> {
   let pos = 0;
   let result = 0;
   let relativeBase = 0;
@@ -43,7 +43,10 @@ function* run(input: number[], program: number[]): Generator<number, number, num
           mem[dst] = input.shift();
         } else {
           const n = yield undefined;
-          if (n != null) mem[dst] = n;
+          if (n != null && n.length > 0) {
+            input.push(...n);
+            mem[dst] = input.shift();
+          }
         }
         pos += 2;
         break;
@@ -53,7 +56,7 @@ function* run(input: number[], program: number[]): Generator<number, number, num
         result = getValue(param1Mode, src);
         pos += 2;
         const n = yield result;
-        if (n != null) input.push(n);
+        if (n != null) input.push(...n);
         break;
       }
       case 5:
@@ -91,47 +94,103 @@ function* run(input: number[], program: number[]): Generator<number, number, num
   return 0;
 }
 
-const part = (forwardNat = false) => {
-  const nbNodes = 50;
-  const addresses = Array(nbNodes)
-    .fill(0)
-    .map((_, i) => i);
-  const generators = addresses.map((x) => run([x, -1], nbs));
-  const recv: number[][] = addresses.map(() => []);
-  const send: number[][] = addresses.map(() => []);
-  let nat: number[] = [];
-  let lastNatY: number = undefined;
-  for (let i = 0; i < 100000; i++) {
-    let idle = true;
-    for (let nodeIndex = 0; nodeIndex < nbNodes; nodeIndex++) {
-      if (send[nodeIndex].length > 0) idle = false;
-      const next = generators[nodeIndex].next(send[nodeIndex].shift() ?? -1);
-      const recvBuf = recv[nodeIndex];
-      if (next.value !== undefined) recvBuf.push(next.value);
-      if (recvBuf.length > 0) idle = false;
-      if (recvBuf.length >= 3) {
-        const [target, x, y] = recvBuf;
-        recvBuf.length = 0;
-        // console.log(`Node ${nodeIndex} sends ${x}, ${y} to ${target}`);
-        if (target === 255) {
-          if (!forwardNat) return y;
-          nat = [x, y];
-        } else if (target >= 0 && target < nbNodes) {
-          send[target].push(x, y);
-        }
+const takeAllInstructions = [
+  'west',
+  'take pointer',
+  'east',
+  'south',
+  'take whirled peas',
+  'south',
+  'south',
+  'south',
+  'take festive hat',
+  'north',
+  'north',
+  'north',
+  'north',
+  'north',
+  'take coin',
+  'north',
+  'take astronaut ice cream',
+  'north',
+  'west',
+  'take dark matter',
+  'south',
+  'take klein bottle',
+  'west',
+  'take mutex',
+  'west',
+  'south',
+  'east',
+];
+
+const items = [
+  'pointer',
+  'whirled peas',
+  'festive hat',
+  'coin',
+  'astronaut ice cream',
+  'dark matter',
+  'klein bottle',
+  'mutex',
+];
+
+const toCharCodes = (s: string) => Array.from(s).map((c) => c.charCodeAt(0));
+
+function* runProgram(generator: Generator<number, number, number[]>): Generator<string, string, string> {
+  let output = '';
+  let input: number[] = null;
+
+  for (;;) {
+    const next = generator.next(input);
+    input = null;
+    if (next.done) break;
+    if (next.value === 10) {
+      console.log(output);
+      if (output === 'Command?') {
+        const command = yield output;
+        input = command ? toCharCodes(command + '\n') : null;
       }
-    }
-    if (idle && nat.length > 0) {
-      console.log(`NAT Send ${nat}`);
-      const [x, y] = nat;
-      if (y === lastNatY) return y;
-      lastNatY = y;
-      send[0].push(x, y);
-      nat = [];
-    }
+      output = '';
+    } else output += String.fromCharCode(next.value);
   }
+  return null;
+}
+
+function* generateSubsets<T>(set: T[]): Generator<T[]> {
+  const length = set.length;
+  const maxNb = Math.pow(2, length);
+  let c, j, k;
+
+  for (c = 0; c < maxNb; c++) {
+    const a: T[] = [];
+    for (j = 0, k = 1; j < length; j++, k <<= 1) {
+      if ((c & k) > 0) a.push(set[j]);
+    }
+    yield a;
+  }
+}
+
+const part = () => {
+  const runner = runProgram(run([], nbs));
+  runner.next();
+  for (const command of takeAllInstructions) {
+    console.log(`Auto input => ${command}`);
+    runner.next(command);
+  }
+  let inventory = items;
+  for (const subset of generateSubsets(items)) {
+    const commands = [];
+    for (const item of items) {
+      if (inventory.includes(item) && !subset.includes(item)) commands.push(`drop ${item}`);
+      else if (!inventory.includes(item) && subset.includes(item)) commands.push(`take ${item}`);
+    }
+    for (const command of commands) runner.next(command);
+    inventory = subset;
+    if (runner.next('east').done) break;
+  }
+  console.log(`Needed items: ${inventory.join(', ')}`);
   return 0;
 };
 
 console.log(part());
-console.log(part(true));
