@@ -13,6 +13,10 @@ name = "aoc2018-02"
 path = "src/2018/aoc2018-02.rs"
 
 [[bin]]
+name = "aoc2018-03"
+path = "src/2018/aoc2018-03.rs"
+
+[[bin]]
 name = "aoc2020-05"
 path = "src/2020/aoc2020-05.rs"
 
@@ -31,3 +35,4 @@ path = "src/2022/aoc2022-01.rs"
 [dependencies]
 color-eyre = "0.6.2"
 itertools = "0.10.5"
+regex = "1.7.0"
