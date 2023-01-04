@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::fmt;
 use std::fs::read_to_string;
 use std::iter::repeat;
-use std::ops::{Index, IndexMut};
+use std::ops::{Add, Index, IndexMut, Range};
 use regex::Regex;
 
 use crate::helper::time_it;
@@ -11,15 +11,13 @@ mod helper;
 
 #[derive(Debug)]
 struct Record {
-    id: usize,
-    x: usize,
-    y: usize,
-    w: usize,
-    h: usize,
+    id: u32,
+    xx: Range<usize>,
+    yy: Range<usize>,
 }
 
 impl Record {
-    fn new(id: usize, x: usize, y: usize, w: usize, h: usize) -> Record { Record { id, x, y, w, h } }
+    fn new(id: u32, x: usize, y: usize, w: usize, h: usize) -> Record { Record { id, xx: x..x + w, yy: y..y + h } }
 }
 
 trait Dimension {
@@ -29,30 +27,32 @@ trait Dimension {
 
 impl Dimension for Vec<Record> {
     fn width(&self) -> usize {
-        self.iter().map(|r| r.x + r.w + 1).max().unwrap()
+        self.iter().map(|r| r.xx.end + 1).max().unwrap()
     }
 
     fn height(&self) -> usize {
-        self.iter().map(|r| r.y + r.h + 1).max().unwrap()
+        self.iter().map(|r| r.yy.end + 1).max().unwrap()
     }
 }
 
 #[derive(Debug)]
-struct Map(Vec<Vec<usize>>);
+struct Map<T>(Vec<Vec<T>>);
 
-impl Map {
+impl<T> Map<T>
+    where T: Add<Output=T>, T: Clone {
     // create vector of vector filled with 0
-    fn new(width: usize, height: usize) -> Map {
+    fn new(width: usize, height: usize, zero: T) -> Map<T> {
         Map(repeat(0).take(height)
             .into_iter()
-            .map(|_| repeat(0)
+            .map(|_| repeat(zero.clone())
                 .take(width)
-                .collect::<Vec<usize>>())
-            .collect::<Vec<Vec<usize>>>())
+                .collect::<Vec<T>>())
+            .collect::<Vec<Vec<T>>>())
     }
 }
 
-impl fmt::Display for Map {
+impl<T> fmt::Display for Map<T>
+    where T: fmt::Display {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for row in self {   // would need to loop in &self.0 if no IntoIterator for &Map
             for cell in row {
@@ -64,29 +64,45 @@ impl fmt::Display for Map {
     }
 }
 
-impl<'a> IntoIterator for &'a Map {
-    type Item = &'a Vec<usize>;
-    type IntoIter = core::slice::Iter<'a, Vec<usize>>;
+impl<'a, T> IntoIterator for &'a Map<T> {
+    type Item = &'a Vec<T>;
+    type IntoIter = core::slice::Iter<'a, Vec<T>>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.iter()
     }
 }
 
-impl Index<usize> for Map {
-    type Output = Vec<usize>;
+impl<T> Index<usize> for Map<T> {
+    type Output = Vec<T>;
 
     fn index(&self, index: usize) -> &Self::Output {
         self.0[index].as_ref()
     }
 }
 
-impl IndexMut<usize> for Map {
+impl<T> IndexMut<usize> for Map<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         self.0[index].as_mut()
     }
 }
 
+trait RangeExt {
+    fn intersects(&self, other: &Self) -> bool;
+    fn intersects2d(&self, y: &Self, x2: &Self, y2: &Self) -> bool;
+}
+
+impl<T> RangeExt for Range<T>
+    where T: PartialOrd,
+{
+    fn intersects(&self, other: &Self) -> bool {
+        self.contains(&other.start) || other.contains(&self.start)
+    }
+
+    fn intersects2d(&self, y: &Self, x2: &Self, y2: &Self) -> bool {
+        self.intersects(x2) && y.intersects(y2)
+    }
+}
 
 fn get_lines() -> Vec<Record> {
     let re = Regex::new(r"^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$").unwrap();
@@ -99,7 +115,7 @@ fn get_lines() -> Vec<Record> {
                 .map(|c| c.unwrap().as_str())
                 .skip(1)
                 .map(|c| c.parse::<usize>().unwrap()).collect();
-            Record::new(nbs[0], nbs[1], nbs[2], nbs[3], nbs[4])
+            Record::new(nbs[0] as u32, nbs[1], nbs[2], nbs[3], nbs[4])
         })
         .collect()
 }
@@ -108,11 +124,11 @@ fn part1() {
     let records = get_lines();
     let width = records.width();
     let height = records.height();
-    let mut map = Map::new(width, height);
-    for rec in &records {
-        for j in 0..rec.h {
-            for i in 0..rec.w {
-                map[rec.y + j][rec.x + i] += 1;
+    let mut map: Map<usize> = Map::new(width, height, 0);
+    for rec in records {    // NB: records is moved
+        for j in rec.yy {
+            for i in rec.xx.clone() {   // NB: no into_iterator on &Range
+                map[j][i] += 1;
             }
         }
     }
@@ -125,30 +141,19 @@ fn part1() {
     println!("Part 1: {result}");
 }
 
-fn between(xb: usize, x: usize, xe: usize) -> bool { xb <= x && x < xe }
-
-fn intersects(xb1: usize, xe1: usize, xb2: usize, xe2: usize) -> bool {
-    between(xb1, xb2, xe1) || between(xb2, xb1, xe2)
-}
-
-fn intersects2d(x: usize, y: usize, xe: usize, ye: usize, x2: usize, y2: usize, xe2: usize, ye2: usize) -> bool {
-    intersects(x, xe, x2, xe2) && intersects(y, ye, y2, ye2)
-}
-
 fn part2() {
     let records = get_lines();
-    let mut overlap: HashSet<usize> = HashSet::new();
+    let mut overlap: HashSet<u32> = HashSet::new();
     for i in 0..records.len() {
         let a = &records[i];
-        for j in (i + 1)..records.len() {
-            let b = &records[j];
-            if intersects2d(a.x, a.y, a.x + a.w, a.y + a.h, b.x, b.y, b.x + b.w, b.y + b.h) {
+        for b in &records[i + 1..] {
+            if a.xx.intersects2d(&a.yy, &b.xx, &b.yy) {
                 overlap.insert(a.id);
                 overlap.insert(b.id);
             }
         }
     }
-    let result = records.iter().find(|&r| !overlap.contains(&r.id)).unwrap().id;
+    let result = records.iter().find_map(|r| if !overlap.contains(&r.id) { Some(r.id) } else { None }).unwrap();
     println!("Part 2: {result}");
 }
 
