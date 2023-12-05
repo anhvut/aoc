@@ -1,3 +1,6 @@
+import * as path from 'path';
+import { Worker } from 'worker_threads';
+
 const parse = (input: string[]) => {
   const seeds = input[0]
     .slice(7)
@@ -49,7 +52,62 @@ const part2 = (input: string[]) => {
   return result;
 };
 
-const runs = [1, 1, 1, 1];
+const NB_THREADS = 20;
+
+const part2_multithreading = async (input: string[]) => {
+  const {seeds, maps} = parse(input);
+
+  // divide seeds in NB_THREADS parts
+  let total = 0;
+  for (let i = 0; i < seeds.length; i += 2) {
+    total += seeds[i+1];
+  }
+  const partSize = Math.ceil(total / NB_THREADS);
+  const newSeeds: number[][] = [];
+  let currentSeedIndex = 0;
+  for (let i = 0; i < NB_THREADS; i++) {
+    let currentSize = 0;
+    const currentSeedRanges: number[] = [];
+    while (currentSize < partSize && currentSeedIndex < seeds.length) {
+      const remaining = partSize - currentSize;
+      if (remaining < seeds[currentSeedIndex+1]) {
+        // currentSeedIndex not fully consumed
+        currentSeedRanges.push(seeds[currentSeedIndex], remaining);
+        currentSize += remaining;
+        seeds[currentSeedIndex] += remaining;
+        seeds[currentSeedIndex+1] -= remaining;
+      } else {
+        // currentSeedIndex fully consumed
+        currentSeedRanges.push(seeds[currentSeedIndex], seeds[currentSeedIndex+1]);
+        currentSize += seeds[currentSeedIndex+1];
+        currentSeedIndex += 2;
+      }
+    }
+    newSeeds.push(currentSeedRanges);
+    if (currentSeedIndex >= seeds.length) break;
+  }
+
+  console.log(new Date(), 'starting workers');
+  const workers = newSeeds.map(newSeed => {
+    return new Worker(path.resolve(__dirname, 'launch_ts_worker.js'), {
+      workerData: {
+        path: 'aoc2023-05_worker.ts',
+        seeds: newSeed,
+        maps
+      }
+    });
+  });
+
+  const results = await Promise.all(workers.map(worker => new Promise((resolve, reject) => {
+    worker.on('message', resolve);
+    worker.on('error', reject);
+  })) as Promise<number>[]);
+
+  console.log(new Date(), 'got result');
+  return Math.min(...results);
+};
+
+const runs = [0, 0, 0, 0, 1, 1];
 
 const inputSample = `
 seeds: 79 14 55 13
@@ -268,7 +326,13 @@ humidity-to-location map:
   .trim()
   .split('\n');
 
-if (runs[0]) console.log(part1(inputSample));   // 35
-if (runs[1]) console.log(part1(inputReal));     // 157211394
-if (runs[2]) console.log(part2(inputSample));   // 46
-if (runs[3]) console.log(part2(inputReal));     // 50855035 (1_589_455_465 iterations !)
+const main = async () => {
+  if (runs[0]) console.log(part1(inputSample));   // 35
+  if (runs[1]) console.log(part1(inputReal));     // 157211394
+  if (runs[2]) console.log(part2(inputSample));   // 46
+  if (runs[3]) console.log(part2(inputReal));     // 50855035 (1_589_455_465 iterations !)
+  if (runs[4]) console.log(await part2_multithreading(inputSample));   // 46
+  if (runs[5]) console.log(await part2_multithreading(inputReal));     // 50855035 (1_589_455_465 iterations !)
+};
+
+main().catch(e => console.log('error', e)).finally(() => console.log('Done'));

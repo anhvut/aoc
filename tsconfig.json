@@ -11,7 +11,7 @@
     "declaration": true,
     "moduleResolution": "node",
     "useUnknownInCatchVariables": false,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "noImplicitThis": true,
     "strictNullChecks": false,
     "noUnusedParameters": false,
