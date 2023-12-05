@@ -242,7 +242,7 @@ Card 193: 77 56 76 24 35 51 22 43 31 34 | 86 38 36 63 58 91 87 73 66 67 61 95 28
   .trim()
   .split('\n');
 
-if (runs[0]) console.log(part1(inputSample));
-if (runs[1]) console.log(part1(inputReal));
-if (runs[2]) console.log(part2(inputSample));
-if (runs[3]) console.log(part2(inputReal));
+if (runs[0]) console.log('part1 sample', part1(inputSample));
+if (runs[1]) console.log('part1 real', part1(inputReal));
+if (runs[2]) console.log('part2 sample', part2(inputSample));
+if (runs[3]) console.log('part2 real', part2(inputReal));
