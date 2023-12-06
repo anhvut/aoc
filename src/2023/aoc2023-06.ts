@@ -1,7 +1,21 @@
+/*
+Solve
+x * (t - x) > d
+x² - t.x + d < 0
+
+delta = t² - 4.d
+
+x1 = (t - sqrt(t² - 4.d)) / 2
+x2 = (t + sqrt(t² - 4.d)) / 2
+*/
 function compute(t: number, d: number) {
-  let min: number, max: number;
-  for (min = 1; min < t; min++) if (min * (t - min) > d) break;
-  for (max = t - min + 1; max >= min; max--) if (max * (t - max) > d) break;
+  const delta = t * t - 4 * d;
+  let min = ((t - Math.sqrt(delta)) / 2);
+  let max = ((t + Math.sqrt(delta)) / 2);
+  if (Number.isInteger(min)) min++;
+  else min = Math.ceil(min);
+  if (Number.isInteger(max)) max--;
+  else max = Math.floor(max);
   return max - min + 1;
 }
 
@@ -21,7 +35,9 @@ const inputReal = {
   Distance: [242, 1017, 1691, 1252]
 };
 
+console.time('time');
 if (runs[0]) console.log('part1 sample', part1(inputSample));
 if (runs[1]) console.log('part1 real', part1(inputReal));
 if (runs[2]) console.log('part2 sample', part2(inputSample));
 if (runs[3]) console.log('part2 real', part2(inputReal));
+console.timeEnd('time');
