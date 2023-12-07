@@ -22,3 +22,9 @@ export async function timeitAsync<T>(f: () => Promise<T>): Promise<T> {
   console.timeEnd('time');
   return result;
 }
+
+export function getCounts<T extends string | number | symbol>(array: T[]): Record<T, number> {
+  const result: Record<T, number> = {} as Record<T, number>;
+  for (const item of array) result[item] = (result[item] || 0) + 1;
+  return result;
+}
