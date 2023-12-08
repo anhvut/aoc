@@ -28,3 +28,30 @@ export function getCounts<T extends string | number | symbol>(array: T[]): Recor
   for (const item of array) result[item] = (result[item] || 0) + 1;
   return result;
 }
+
+export function gcd2(a: number, b: number) {
+  if (b === 0) return a;
+  return gcd2(b, a % b);
+}
+
+export function gcd(...n: number[]) {
+  if (n.length === 0) return 0;
+  if (n.length === 1) return n[0];
+  return n.reduce((a, b) => gcd2(a, b));
+}
+
+export function lcm2(a: number, b: number) {
+  return (a * b) / gcd2(a, b);
+}
+
+export function lcm(...n: number[]) {
+  if (n.length === 0) return 0;
+  if (n.length === 1) return n[0];
+  return n.reduce((a, b) => lcm2(a, b));
+}
+
+export function keyBy<VALUE>(array: VALUE[], key: string | number | symbol): Record<string | number | symbol, VALUE> {
+  const result: Record<string | number | symbol, VALUE> = {};
+  for (const item of array) result[item[key]] = item;
+  return result;
+}
