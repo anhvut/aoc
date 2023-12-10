@@ -55,3 +55,36 @@ export function keyBy<VALUE>(array: VALUE[], key: string | number | symbol): Rec
   for (const item of array) result[item[key]] = item;
   return result;
 }
+
+export type POINT = [number, number];
+
+export type SERIALIZED_POINT = `${number},${number}`;
+
+export const pointEquals = ([x1, y1]: POINT, [x2, y2]: POINT) => x1 === x2 && y1 === y2;
+
+export const scalarProduct = ([x1, y1]: POINT, [x2, y2]: POINT) => x1 * x2 + y1 * y2;
+
+export const serializePoint = ([x, y]: POINT): SERIALIZED_POINT => `${x},${y}`;
+
+export const deserializePoint = (s: SERIALIZED_POINT): POINT => s.split(',').map(x => +x) as POINT;
+
+// BEWARE: screen coordinates: y-axis is inverted, +1 = down, -1 = up
+export const isClockwise = ([x1, y1]: POINT, [x2, y2]: POINT) => {
+  return x1 * y2 - x2 * y1 > 0;
+}
+
+export const assert = (value: boolean, message = 'Assertion failed') => {
+  if (!value) throw new Error(message);
+}
+
+export function testClockwise() {
+  assert(isClockwise([0, -1], [1, 0]));
+  assert(isClockwise([1, 0], [0, 1]));
+  assert(isClockwise([0, 1], [-1, 0]));
+  assert(isClockwise([-1, 0], [0, -1]));
+  assert(!isClockwise([1, 0], [0, -1]));
+  assert(!isClockwise([0, -1], [-1, 0]));
+  assert(!isClockwise([-1, 0], [0, 1]));
+  assert(!isClockwise([0, 1], [1, 0]));
+}
+
