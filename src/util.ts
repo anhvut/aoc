@@ -68,6 +68,15 @@ export const serializePoint = ([x, y]: POINT): SERIALIZED_POINT => `${x},${y}`;
 
 export const deserializePoint = (s: SERIALIZED_POINT): POINT => s.split(',').map(x => +x) as POINT;
 
+export const manhattanDistance = ([x1, y1]: POINT, [x2, y2]: POINT) => Math.abs(x1 - x2) + Math.abs(y1 - y2);
+
+export function constantArray<V>(length: number, value: V): Array<V> {
+  return Array.from({length}, () => value);
+}
+
+export const sequence = (length: number, start = 0, step = 1): Array<number> => Array.from({length}, (_, i) => start + i * step);
+
+
 // BEWARE: screen coordinates: y-axis is inverted, +1 = down, -1 = up
 export const isClockwise = ([x1, y1]: POINT, [x2, y2]: POINT) => {
   return x1 * y2 - x2 * y1 > 0;
