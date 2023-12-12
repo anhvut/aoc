@@ -9,6 +9,14 @@ export function toChunks<T>(array: T[], size: number): T[][] {
   return result;
 }
 
+export function arrayIndices<T>(array: T[], item: T): number[] {
+  const result: number[] = [];
+  for (let i = 0; i < array.length; i++) {
+    if (array[i] === item) result.push(i);
+  }
+  return result;
+}
+
 export function timeit<T>(f: () => T): T {
   console.time('time');
   const result = f();
