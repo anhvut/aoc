@@ -78,6 +78,10 @@ export const deserializePoint = (s: SERIALIZED_POINT): POINT => s.split(',').map
 
 export const manhattanDistance = ([x1, y1]: POINT, [x2, y2]: POINT) => Math.abs(x1 - x2) + Math.abs(y1 - y2);
 
+export const pointAdd = ([x1, y1]: POINT, [x2, y2]: POINT): POINT => [x1 + x2, y1 + y2];
+
+export const pointDiff = ([x1, y1]: POINT, [x2, y2]: POINT): POINT => [x1 - x2, y1 - y2];
+
 export const sum = (x: number[]) => x.reduce((a, b) => a + b, 0);
 
 export const sum2 = (x: Array<POINT>) => x.reduce(([x1, y1], [x2, y2]) => [x1 + x2, y1 + y2], [0, 0]);
