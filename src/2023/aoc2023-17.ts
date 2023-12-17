@@ -1,4 +1,4 @@
-import {POINT, pointEquals, serializePoint, timeit} from '../util';
+import {ALL_DIRECTIONS, POINT, pointAdd, pointEquals, serializePoint, timeit} from '../util';
 
 const parse = (input: string[]) => input.map((l) => l.split('').map((x) => +x));
 
@@ -8,8 +8,6 @@ type ENTRY = {
   distance: number;
   burst: number;
 };
-
-const allDirections: POINT[] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 
 function display(grid: number[][], path: ENTRY) {
   const displayableGrid = grid.map((row) => row.map((x) => x.toString()));
@@ -38,9 +36,9 @@ function compute(grid: number[][], minSteps: number, maxSteps: number) {
   while (!solution && queue.length) {
     const currentPath = queue.shift();
     const lastPoint = currentPath.points[currentPath.points.length - 1];
-    for (const dir of allDirections) {
+    for (const dir of ALL_DIRECTIONS) {
       if (pointEquals([-dir[0], -dir[1]], currentPath.dir)) continue; // do not go backward
-      const newPoint: POINT = [lastPoint[0] + dir[0], lastPoint[1] + dir[1]];
+      const newPoint: POINT = pointAdd(lastPoint, dir);
       if (newPoint[0] < 0 || newPoint[0] >= mx || newPoint[1] < 0 || newPoint[1] >= my) continue; // keep inside bound
       const sameDir = pointEquals(dir, currentPath.dir);
       const burst = sameDir ? currentPath.burst + 1 : 1;

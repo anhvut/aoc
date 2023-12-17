@@ -1,3 +1,5 @@
+import {ALL_DIRECTIONS} from "../util";
+
 export {};
 import fs from 'fs';
 const nbs: number[] = fs
@@ -117,13 +119,6 @@ enum Cell {
   OXYGEN = 2,
 }
 
-const AllDirections = [
-  [-1, 0],
-  [1, 0],
-  [0, -1],
-  [0, 1],
-];
-
 type SearchTree = {
   position: Vector;
   children: SearchTree[];
@@ -139,7 +134,7 @@ const searchPath = (from: Vector, to: Vector, map: Record<string, Cell>): Vector
   let current: SearchTree;
   while (searches.length > 0) {
     current = searches.shift();
-    for (const direction of AllDirections) {
+    for (const direction of ALL_DIRECTIONS) {
       const nextPosition = vectorAdd(current.position, direction);
       const s = serializePoint(nextPosition);
       const cell = map[s];
@@ -194,7 +189,7 @@ const main = (): void => {
       position = step;
     }
     // search four directions around toExplore
-    for (const direction of AllDirections) {
+    for (const direction of ALL_DIRECTIONS) {
       const neighbour = vectorAdd(position, direction);
       const s = serializePoint(neighbour);
       if (map.hasOwnProperty(s)) continue;

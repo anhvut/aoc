@@ -1,70 +1,71 @@
-import {serializePoint} from '../util';
+import {DOWN, LEFT, POINT, pointAdd, RIGHT, SERIALIZED_POINT, serializePoint, UP} from '../util';
 
 const parse = (input: string[]) => {
   return input.map((x) => x.split(''));
 };
 
-const reflectMap1 = {
-  [serializePoint([1, 0])]: [0, -1],
-  [serializePoint([0, 1])]: [-1, 0],
-  [serializePoint([-1, 0])]: [0, 1],
-  [serializePoint([0, -1])]: [1, 0]
+const reflectMap1: Record<SERIALIZED_POINT, POINT> = {
+  [serializePoint(RIGHT)]: UP,
+  [serializePoint(DOWN)]: LEFT,
+  [serializePoint(LEFT)]: DOWN,
+  [serializePoint(UP)]: RIGHT
 };
 
-const reflectMap2 = {
-  [serializePoint([1, 0])]: [0, 1],
-  [serializePoint([0, 1])]: [1, 0],
-  [serializePoint([-1, 0])]: [0, -1],
-  [serializePoint([0, -1])]: [-1, 0]
+const reflectMap2: Record<SERIALIZED_POINT, POINT> = {
+  [serializePoint(RIGHT)]: DOWN,
+  [serializePoint(DOWN)]: RIGHT,
+  [serializePoint(LEFT)]: UP,
+  [serializePoint(UP)]: LEFT
 };
 
-function count(grid: string[][], beams: number[][]) {
+type BEAM = {point: POINT; dir: POINT};
+
+function count(grid: string[][], beams: Array<BEAM>) {
   const mx = grid[0].length;
   const my = grid.length;
-  const visited = grid.map((r) => r.map(() => '.'));
-  const visitedDir = grid.map((r) => r.map(() => ({})));
+  const energized: Record<SERIALIZED_POINT, boolean> = {};
+  const visited: Record<`${SERIALIZED_POINT};${SERIALIZED_POINT}`, boolean> = {};
   while (true) {
-    let nextBeams = [];
-    for (let [x, y, dx, dy] of beams) {
-      const serializedDir = serializePoint([dx, dy]);
-      if (x < 0 || x >= mx || y < 0 || y >= my || visitedDir[y][x][serializedDir]) continue;
-      visited[y][x] = '#';
-      visitedDir[y][x][serializedDir] = true;
+    let nextBeams: Array<BEAM> = [];
+    for (let {point, dir} of beams) {
+      const [x, y] = point;
+      const serializedPoint = serializePoint(point);
+      const serializedDir = serializePoint(dir);
+      const key = `${serializedPoint};${serializedDir}`;
+      if (x < 0 || x >= mx || y < 0 || y >= my || visited[key]) continue;
+      visited[key] = true;
+      energized[serializedPoint] = true;
       switch (grid[y][x]) {
         case '.':
-          nextBeams.push([x, y, dx, dy]);
+          nextBeams.push({point, dir});
           break;
         case '-':
-          if (dx) nextBeams.push([x, y, dx, dy]);
-          else nextBeams.push([x, y, -1, 0], [x, y, 1, 0]);
+          if (dir[0]) nextBeams.push({point, dir});
+          else nextBeams.push({point, dir: LEFT}, {point, dir: RIGHT});
           break;
         case '|':
-          if (dy) nextBeams.push([x, y, dx, dy]);
-          else nextBeams.push([x, y, 0, -1], [x, y, 0, 1]);
+          if (dir[1]) nextBeams.push({point, dir});
+          else nextBeams.push({point, dir: UP}, {point, dir: DOWN});
           break;
         case '/':
-          nextBeams.push([x, y, ...reflectMap1[serializedDir]]);
+          nextBeams.push({point, dir: reflectMap1[serializedDir]});
           break;
         case '\\':
-          nextBeams.push([x, y, ...reflectMap2[serializedDir]]);
+          nextBeams.push({point, dir: reflectMap2[serializedDir]});
           break;
         default:
           throw new Error(`Unknown char ${grid[y][x]}`);
       }
     }
-    for (const b of nextBeams) {
-      b[0] += b[2];
-      b[1] += b[3];
-    }
     if (!nextBeams.length) break;
-    beams = nextBeams;
+    beams = nextBeams.map(({point, dir}) => ({point: pointAdd(point, dir), dir}));
   }
-  return Array.from(visited.flat()).filter((c) => c === '#').length;
+  return Object.keys(energized).length;
 }
 
 const part1 = (input: string[]) => {
   const grid = parse(input);
-  return count(grid, [[0, 0, 1, 0]]);
+  return count(grid, [{point: [0, 0], dir: RIGHT}]);
 };
 
 const part2 = (input: string[]) => {
@@ -73,10 +74,16 @@ const part2 = (input: string[]) => {
   const my = grid.length;
   let result = 0;
 
-  for (let x = 0; x < mx; x++)
-    result = Math.max(result, count(grid, [[x, 0, 0, 1]]), count(grid, [[x, my - 1, 0, -1]]));
-  for (let y = 0; y < my; y++)
-    result = Math.max(result, count(grid, [[0, y, 1, 0]]), count(grid, [[mx - 1, y, -1, 0]]));
+  for (let x = 0; x < mx; x++) {
+    const downward = count(grid, [{point: [x, 0], dir: DOWN}]);
+    const upward = count(grid, [{point: [x, my - 1], dir: UP}]);
+    result = Math.max(result, downward, upward);
+  }
+  for (let y = 0; y < my; y++) {
+    const rightward = count(grid, [{point: [0, y], dir: RIGHT}]);
+    const leftward = count(grid, [{point: [mx - 1, y], dir: LEFT}]);
+    result = Math.max(result, rightward, leftward);
+  }
   return result;
 };
 

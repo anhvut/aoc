@@ -64,6 +64,8 @@ export function keyBy<VALUE>(array: VALUE[], key: string | number | symbol): Rec
   return result;
 }
 
+// region Point
+
 export type POINT = [number, number];
 
 export type SERIALIZED_POINT = `${number},${number}`;
@@ -74,7 +76,7 @@ export const scalarProduct = ([x1, y1]: POINT, [x2, y2]: POINT) => x1 * x2 + y1 
 
 export const serializePoint = ([x, y]: POINT): SERIALIZED_POINT => `${x},${y}`;
 
-export const deserializePoint = (s: SERIALIZED_POINT): POINT => s.split(',').map(x => +x) as POINT;
+export const deserializePoint = (s: SERIALIZED_POINT): POINT => s.split(',').map((x) => +x) as POINT;
 
 export const manhattanDistance = ([x1, y1]: POINT, [x2, y2]: POINT) => Math.abs(x1 - x2) + Math.abs(y1 - y2);
 
@@ -82,11 +84,20 @@ export const pointAdd = ([x1, y1]: POINT, [x2, y2]: POINT): POINT => [x1 + x2, y
 
 export const pointDiff = ([x1, y1]: POINT, [x2, y2]: POINT): POINT => [x1 - x2, y1 - y2];
 
+export const UP: POINT = [0, -1];
+export const DOWN: POINT = [0, 1];
+export const LEFT: POINT = [-1, 0];
+export const RIGHT: POINT = [1, 0];
+
+export const ALL_DIRECTIONS = [LEFT, RIGHT, UP, DOWN];
+
+// endregion
+
 export const sum = (x: number[]) => x.reduce((a, b) => a + b, 0);
 
 export const sum2 = (x: Array<POINT>) => x.reduce(([x1, y1], [x2, y2]) => [x1 + x2, y1 + y2], [0, 0]);
 
-export const transpose = <T>(x: T[][]) => x[0].map((_, i) => x.map(y => y[i]));
+export const transpose = <T>(x: T[][]) => x[0].map((_, i) => x.map((y) => y[i]));
 
 export function constantArray<V>(length: number, value: V): Array<V> {
   return Array.from({length}, () => value);
@@ -94,15 +105,14 @@ export function constantArray<V>(length: number, value: V): Array<V> {
 
 export const sequence = (length: number, start = 0, step = 1): Array<number> => Array.from({length}, (_, i) => start + i * step);
 
-
 // BEWARE: screen coordinates: y-axis is inverted, +1 = down, -1 = up
 export const isClockwise = ([x1, y1]: POINT, [x2, y2]: POINT) => {
   return x1 * y2 - x2 * y1 > 0;
-}
+};
 
 export const assert = (value: boolean, message = 'Assertion failed') => {
   if (!value) throw new Error(message);
-}
+};
 
 export function testClockwise() {
   assert(isClockwise([0, -1], [1, 0]));
@@ -114,4 +124,3 @@ export function testClockwise() {
   assert(!isClockwise([-1, 0], [0, 1]));
   assert(!isClockwise([0, 1], [1, 0]));
 }
-
