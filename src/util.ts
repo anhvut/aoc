@@ -97,6 +97,8 @@ export const sum = (x: number[]) => x.reduce((a, b) => a + b, 0);
 
 export const sum2 = (x: Array<POINT>) => x.reduce(([x1, y1], [x2, y2]) => [x1 + x2, y1 + y2], [0, 0]);
 
+export const product = (x: number[]) => x.reduce((a, b) => a * b, 1);
+
 export const transpose = <T>(x: T[][]) => x[0].map((_, i) => x.map((y) => y[i]));
 
 export function constantArray<V>(length: number, value: V): Array<V> {
