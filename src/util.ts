@@ -93,6 +93,28 @@ export const ALL_DIRECTIONS = [LEFT, RIGHT, UP, DOWN];
 
 // endregion
 
+// region Point 3D
+
+export type POINT3D = [number, number, number];
+
+export type SERIALIZED_POINT3D = `${number},${number},${number}`;
+
+export const point3DEquals = ([x1, y1, z1]: POINT3D, [x2, y2, z2]: POINT3D) => x1 === x2 && y1 === y2 && z1 === z2;
+
+export const scalarProduct3D = ([x1, y1, z1]: POINT3D, [x2, y2, z2]: POINT3D) => x1 * x2 + y1 * y2 + z1 * z2;
+
+export const serializePoint3D = ([x, y, z]: POINT3D): SERIALIZED_POINT3D => `${x},${y},${z}`;
+
+export const deserializePoint3D = (s: SERIALIZED_POINT3D): POINT3D => s.split(',').map((x) => +x) as POINT3D;
+
+export const manhattanDistance3D = ([x1, y1, z1]: POINT3D, [x2, y2, z2]: POINT3D) => Math.abs(x1 - x2) + Math.abs(y1 - y2) + Math.abs(z1 - z2);
+
+export const point3DAdd = ([x1, y1, z1]: POINT3D, [x2, y2, z2]: POINT3D): POINT3D => [x1 + x2, y1 + y2, z1 + z2];
+
+export const point3DDiff = ([x1, y1, z1]: POINT3D, [x2, y2, z2]: POINT3D): POINT3D => [x1 - x2, y1 - y2, z1 - z2];
+
+// endregion
+
 export const sum = (x: number[]) => x.reduce((a, b) => a + b, 0);
 
 export const sum2 = (x: Array<POINT>) => x.reduce(([x1, y1], [x2, y2]) => [x1 + x2, y1 + y2], [0, 0]);
