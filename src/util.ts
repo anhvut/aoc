@@ -115,11 +115,79 @@ export const point3DDiff = ([x1, y1, z1]: POINT3D, [x2, y2, z2]: POINT3D): POINT
 
 // endregion
 
+// region Matrix
+
+export type VECTOR = number[];
+export type MATRIX = number[][];
+
+export const matrixMultiply = (m1: MATRIX, m2: MATRIX): MATRIX => {
+  // m1 size (y1, x1) x m2 size (y2, x2) => size (y3=y1, x3=x2) - x1 must be equal y2
+  const result: MATRIX = [];
+  for (let yTarget = 0; yTarget < m1.length; yTarget++) {
+    const line: VECTOR = [];
+    result.push(line);
+    for (let xTarget = 0; xTarget < m2[0].length; xTarget++) {
+      let cell = 0;
+      for (let i = 0; i < m2.length; i++) {
+        cell += m1[yTarget][i] * m2[i][xTarget];
+      }
+      line.push(cell);
+    }
+  }
+  return result;
+};
+
+export const matrixVectorMultiply = (m: MATRIX, p: VECTOR): VECTOR => matrixMultiply(m, p.map(x => [x])).flat();
+
+export const inverseMatrix2 = (m: MATRIX): MATRIX => {
+  const [[a, b], [c, d]] = m;
+  const det = a * d - b * c;
+  if (!det) return null;
+  return [
+    [d / det, -b / det],
+    [-c / det, a / det],
+  ];
+}
+
+export const scaleVector = (v: VECTOR, s: number): VECTOR => v.map(x => x * s);
+
+export const addVector = (u: VECTOR, v: VECTOR): VECTOR => u.map((x, i) => x + v[i]);
+
+export const subtractVector = (u: VECTOR, v: VECTOR): VECTOR => u.map((x, i) => x - v[i]);
+
+export const dotProduct = (u: VECTOR, v: VECTOR): number => u.reduce((a, b, i) => a + b * v[i], 0);
+
+export const crossProduct = ([x1, y1, z1]: VECTOR, [x2, y2, z2]: VECTOR): VECTOR => [
+  y1 * z2 - z1 * y2,
+  z1 * x2 - x1 * z2,
+  x1 * y2 - y1 * x2,
+];
+
+export const inverseMatrix3 = (m: MATRIX): MATRIX => {
+  const [[a, b, c], [d, e, f], [g, h, i]] = m;
+  const det = a * e * i + b * f * g + c * d * h - c * e * g - b * d * i - a * f * h;
+  if (!det) return null;
+  return [
+    [(e * i - f * h) / det, (c * h - b * i) / det, (b * f - c * e) / det],
+    [(f * g - d * i) / det, (a * i - c * g) / det, (c * d - a * f) / det],
+    [(d * h - e * g) / det, (b * g - a * h) / det, (a * e - b * d) / det],
+  ];
+}
+
+
+// endregion
+
 export const sum = (x: number[]) => x.reduce((a, b) => a + b, 0);
 
 export const sum2 = (x: Array<POINT>) => x.reduce(([x1, y1], [x2, y2]) => [x1 + x2, y1 + y2], [0, 0]);
 
 export const product = (x: number[]) => x.reduce((a, b) => a * b, 1);
+
+export const isApproximatelyEqual = (x: number, y: number, epsilon?: number) => {
+  if (!epsilon) epsilon = Math.max(Math.abs(x), Math.abs(y)) * 1e-10;
+  return Math.abs(x - y) < epsilon;
+}
+
 
 export const transpose = <T>(x: T[][]) => x[0].map((_, i) => x.map((y) => y[i]));
 

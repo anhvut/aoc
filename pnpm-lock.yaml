@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  eigen:
+    specifier: ^0.2.2
+    version: 0.2.2
   readline-sync:
     specifier: ^1.4.10
     version: 1.4.10
@@ -139,6 +142,10 @@ packages:
   /@tsconfig/node16@1.0.3:
     resolution: {integrity: sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==}
     dev: true
+
+  /@types/hashmap@2.3.4:
+    resolution: {integrity: sha512-IoFSb7S7cwCM23HcAhUS57DBWPU0dPSF6Wz4M4y0S+B1xgGmM08WOzd1wBldesmZ28jhzRNmXda/FO5uY3tLlw==}
+    dev: false
 
   /@types/json-schema@7.0.11:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==}
@@ -434,6 +441,13 @@ packages:
       esutils: 2.0.3
     dev: true
 
+  /eigen@0.2.2:
+    resolution: {integrity: sha512-M+g7PKbPTJmQFOl60PYj0/jfU43qyuFrrPHZJCQYxfprV6jwRVaVHFJLhGH+eG8y9W/I/YjwzJTmIWLdLv2o2g==}
+    dependencies:
+      '@types/hashmap': 2.3.4
+      hashmap: 2.4.0
+    dev: false
+
   /escape-string-regexp@4.0.0:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
@@ -710,6 +724,10 @@ packages:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
     dev: true
+
+  /hashmap@2.4.0:
+    resolution: {integrity: sha512-Ngj48lhnxJdnBAEVbubKBJuN1elfVLZJs94ZixRi98X3GCU4v6pgj9qRkHt6H8WaVJ69Wv0r1GhtS7hvF9zCgg==}
+    dev: false
 
   /ignore@5.2.1:
     resolution: {integrity: sha512-d2qQLzTJ9WxQftPAuEQpSPmKqzxePjzVbpAVv62AQ64NTL+wR4JkrVqR/LqFsFEUsHDAiId52mJteHDFuDkElA==}
