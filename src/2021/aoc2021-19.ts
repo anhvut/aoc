@@ -222,7 +222,7 @@ function getInverseRelation(match: TRANSFORMATION, from: number, to: number): MA
   const inverseRotationMatrix = rotationMatrices[inverseMatrixIndex];
   const inverseTranslation = matrixMultiply([match.translation], inverseRotationMatrix)[0].map((x) => -x);
   return {
-    from: to,
+    current: to,
     to: from,
     added: false,
     rotationIndex: inverseMatrixIndex,
@@ -268,7 +268,7 @@ function computeTransformations() {
           } and translation [${match.translation.join(',')}]`
         );
         relativePositions.push({
-          from,
+          from: current,
           to,
           added: false,
           ...match,
