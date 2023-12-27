@@ -64,6 +64,16 @@ export function keyBy<VALUE>(array: VALUE[], key: string | number | symbol): Rec
   return result;
 }
 
+export function groupBy(array: any[], key: string | number | symbol): Record<string | number | symbol, any[]> {
+  const result: Record<string | number | symbol, any[]> = {};
+  for (const item of array) {
+    const k = item[key];
+    if (!result[k]) result[k] = [];
+    result[k].push(item);
+  }
+  return result;
+}
+
 // region Point
 
 export type POINT = [number, number];
