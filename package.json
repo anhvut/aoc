@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "eigen": "^0.2.2",
+    "es-toolkit": "^1.29.0",
     "readline-sync": "^1.4.10"
   }
 }

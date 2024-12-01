@@ -8,6 +8,9 @@ dependencies:
   eigen:
     specifier: ^0.2.2
     version: 0.2.2
+  es-toolkit:
+    specifier: ^1.29.0
+    version: 1.29.0
   readline-sync:
     specifier: ^1.4.10
     version: 1.4.10
@@ -446,6 +449,10 @@ packages:
     dependencies:
       '@types/hashmap': 2.3.4
       hashmap: 2.4.0
+    dev: false
+
+  /es-toolkit@1.29.0:
+    resolution: {integrity: sha512-GjTll+E6APcfAQA09D89HdT8Qn2Yb+TeDSDBTMcxAo+V+w1amAtCI15LJu4YPH/UCPoSo/F47Gr1LIM0TE0lZA==}
     dev: false
 
   /escape-string-regexp@4.0.0:
