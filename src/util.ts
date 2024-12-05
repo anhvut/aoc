@@ -31,6 +31,22 @@ export async function timeitAsync<T>(f: () => Promise<T>): Promise<T> {
   return result;
 }
 
+export function consoleTimeit<T>(prefix: string, f: () => T): T {
+  const start = performance.now();
+  const result = f();
+  const end = performance.now();
+  console.log(prefix, `${(end - start).toFixed(3)}ms`, result);
+  return result;
+}
+
+export async function consoleTimeitAsync<T>(prefix: string, f: () => Promise<T>): Promise<T> {
+  const start = performance.now();
+  const result = await f();
+  const end = performance.now();
+  console.log(prefix, `${(end - start).toFixed(3)}ms`, result);
+  return result;
+}
+
 export function getCounts<T extends string | number | symbol>(array: T[]): Record<T, number> {
   const result: Record<T, number> = {} as Record<T, number>;
   for (const item of array) result[item] = (result[item] || 0) + 1;
